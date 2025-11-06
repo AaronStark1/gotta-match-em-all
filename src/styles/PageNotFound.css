@@ -1,0 +1,135 @@
+.nf-wrapper {
+  height: 100vh;
+  width: 100vw;
+  background: radial-gradient(circle at center, #2b2b2b, #111);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.nf-content {
+  color: #fff;
+  padding: 2rem;
+}
+
+.nf-404 {
+  display: flex;
+  align-items: center; /* This keeps everything centered vertically */
+  justify-content: center;
+  gap: 2rem;
+  line-height: 1; /* Important to remove font extra spacing */
+}
+
+/* Lower the 4s or raise GIF slightly */
+.nf-404 span {
+  font-size: 20rem;
+
+  color: #ffcb05;
+  display: inline-block;
+  transform: translateY(30px); /* move both 4s DOWN a little */
+  padding-top: 0.3ch;
+}
+
+/* Optional: Raise GIF instead of lowering the 4s: choose one */
+.nf-pokeball {
+  width: 350px;   /* Increase this value to scale up */
+  height: auto; 
+  filter: drop-shadow(0 0 12px #ff3e3e);
+  transform: translateY(7px); /* tiny upward shift */
+}
+
+
+.nf-text {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #cccccc;
+}
+
+.nf-buttons {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+}
+
+.nf-buttons .nes-btn {
+  font-size: 1.5rem;
+}
+
+/* ✅ Base styles you already have ... keep them unchanged above */
+
+/* ===================== */
+/* 📱 TABLETS & SMALL SCREENS */
+/* ===================== */
+@media (max-width: 820px) {
+  .nf-404 span {
+    font-size: 14rem;
+    transform: translateY(20px);
+  }
+
+  .nf-pokeball {
+    width: 260px;
+    transform: translateY(4px);
+  }
+
+  .nf-text {
+    font-size: 1rem;
+  }
+
+  .nf-buttons .nes-btn {
+    font-size: 1.2rem;
+    padding: 0.8rem 1.4rem;
+  }
+}
+
+/* ===================== */
+/* 📱 MOBILE PHONES */
+/* ===================== */
+@media (max-width: 540px) {
+  .nf-wrapper {
+    padding: 1rem;
+  }
+
+  .nf-404 {
+    gap: 1rem;
+  }
+
+  .nf-404 span {
+    font-size: 9rem;
+    transform: translateY(12px);
+  }
+
+  .nf-pokeball {
+    width: 180px;
+    transform: translateY(6px);
+  }
+
+  .nf-text {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .nf-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .nf-buttons .nes-btn {
+    font-size: 1.1rem;
+    width: 180px;
+  }
+}
+
+/* ===================== */
+/* 📱 EXTRA SMALL (Older Phones) */
+/* ===================== */
+@media (max-width: 380px) {
+  .nf-404 span {
+    font-size: 7rem;
+  }
+
+  .nf-pokeball {
+    width: 150px;
+  }
+}

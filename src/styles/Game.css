@@ -1,0 +1,178 @@
+.game-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background:center/cover no-repeat;
+  padding: 1rem;
+  color: white;
+  text-align: center;
+  transition: background-image 0.6s ease-in-out;
+}
+
+.game-title {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-shadow: 2px 2px 0 #ff0000;
+}
+
+.game-layout {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(80px, 1fr));
+  gap: 12px;
+  max-width: 580px;   /* ← restores original grid width */
+  width: 90%;         /* ← allows scaling nicely */
+  margin: 0 auto;     /* ← keeps it centered */
+}
+
+.grid-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto;
+}
+
+
+/* Scoreboard anchored left of grid */
+.grid-wrapper > .scoreboard {
+  position: absolute !important;
+  left: 5%;
+  top: 0;
+  z-index: 50;
+  width: 16%;
+  height: auto;
+}
+
+
+
+
+
+/* Card flip effect */
+.card {
+  perspective: 800px;
+  cursor: pointer;
+}
+.card {
+  animation: fadeInUp 0.5s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  padding-top: 120%; /* keeps it square */
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #fff;
+  border-radius: 8px;
+  backface-visibility: hidden;
+}
+
+.card-front {
+  background: url('../assets/card_front_pixel.jpeg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.card-front:hover {
+  filter: brightness(1.6);
+  transform: scale(1.05);
+  transition: all 0.2s ease;
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-back img {
+  width: 100%;
+}
+
+/* Mobile Layout */
+@media (max-width: 700px) {
+
+  .grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .grid-wrapper > .scoreboard {
+    position: static !important;   /* fully overrides desktop absolute */
+    left: auto !important;
+    top: auto !important;
+    width: 65%;                    /* full-width scoreboard */
+    margin-bottom: 2em;
+    margin-left: 0;
+    text-align: center;
+  }
+
+  .grid {
+    width: 100%;
+    max-width: 380px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+}
+
+.game-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 700px) {
+  .game-controls {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+  
+  .game-controls .nes-btn {
+    font-size: 0.65rem;
+    padding: 0.4rem 0.6rem;
+  }
+}

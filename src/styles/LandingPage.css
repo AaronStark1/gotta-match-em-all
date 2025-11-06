@@ -1,0 +1,143 @@
+/* Base Container Styles */
+.container {
+  background-image: url('../assets/gifs/poke-group.gif');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Centering content */
+.centering {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Heading and text styling */
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  color: #e63946;
+  letter-spacing: 2px;
+  text-shadow: 3px 3px 0 #fff;
+}
+
+p {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: #f8f9fa;
+}
+
+/* Link styling */
+.link {
+  color: #ffcc00;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.link:hover {
+  color: #fff;
+}
+
+/* Footer section (bottom info) */
+.footer {
+  position: absolute;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
+  color: #fff;
+}
+
+/* Responsive Button */
+/* .nes-btn {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  padding: 0.6rem 1.2rem;
+} */
+
+/* Pokéball icon adjustments */
+.nes-pokeball {
+  transform: scale(0.8);
+}
+
+/* ------------------- */
+/* MEDIA QUERIES BELOW */
+/* ------------------- */
+
+/* Tablets */
+@media (max-width: 768px) {
+  .container {
+    background-position: center top;
+    padding: 2rem 1rem;
+  }
+
+  h1 {
+    text-shadow: 2px 2px 0 #e63946;
+  }
+
+  .footer {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* Mobile Phones */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .footer {
+    bottom: 10px;
+    flex-direction: column;
+    text-align: center;
+    font-size: 0.75rem;
+  }
+
+  .nes-pokeball {
+    transform: scale(0.7);
+  }
+}
+.press-start {
+  text-shadow: 2px 2px 0 #f8f9fa;
+  animation: blink 1.2s steps(2, start) infinite;
+  
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+.pokeball-loader {
+  animation: bounce 1.2s infinite ease-in-out;
+  transform-origin: bottom center;
+  margin-bottom: 20px;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+

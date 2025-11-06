@@ -1,0 +1,81 @@
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 15, 15, 0.65);
+  background: url('https://cdnb.artstation.com/p/assets/images/images/056/756/425/original/bencin-studios-pixelartbackground.gif?1670002516') center/cover no-repeat,
+              rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.loader-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 100px;
+}
+
+/* Pokéball */
+.pokeball {
+  height: 140px;
+  width: 140px;
+  border-radius: 50%;
+  border: 8px solid #000;
+  background-image: linear-gradient(
+    to bottom,
+    #d62828 0%,
+    #d62828 47%,
+    #000 47%,
+    #000 53%,
+    #ffffff 53%,
+    #ffffff 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: spin 1.4s infinite ease-in-out;
+}
+
+.pokeball:after {
+  content: "";
+  display: block;
+  height: 34px;
+  width: 34px;
+  border-radius: 50%;
+  border: 6px solid #000;
+  background: #ffffff;
+  box-shadow: 0 0 8px #000 inset;
+}
+
+/* Rotation animation */
+@keyframes spin {
+  0% { transform: rotate(0deg) scale(2.10); }
+  50% { transform: rotate(360deg) scale(2); }
+  100% { transform: rotate(360deg) scale(2.10); }
+}
+
+/* Loading Text */
+.loading-text {
+  margin-top: 18px;
+  font-size: 0.9rem;
+  color: #fff;
+  text-shadow: 2px 2px #000;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0.35; }
+}

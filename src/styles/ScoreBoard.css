@@ -1,0 +1,40 @@
+.scoreboard {
+  width: 220px;
+  text-align: left;
+  font-family: "Press Start 2P", cursive;
+  font-size: 0.7rem;
+  line-height: 1.6;
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border: 2px solid #ffe600;
+}
+
+
+
+
+.scoreboard:hover {
+  transform: scale(1.03);
+}
+
+.scoreboard.pulse {
+  animation: pulseGlow 0.6s ease;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 8px #ffe600, 0 0 15px #ffae00;
+  }
+  50% {
+    box-shadow: 0 0 20px #ffae00, 0 0 40px #ffe600;
+  }
+  100% {
+    box-shadow: 0 0 8px #ffe600, 0 0 15px #ffae00;
+  }
+}
+@keyframes slideIn {
+  from { transform: translateX(-80px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.scoreboard.animate-once {
+  animation: slideIn 0.4s ease-out;
+}
