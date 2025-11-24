@@ -1,0 +1,14 @@
+* {
+  cursor: url("/src/assets/cursors/pokecursor.png") 12 12, auto;
+}
+
+button.nes-btn,
+.nes-btn,
+button,
+a,
+[role="button"],
+.clickable,
+input,
+select {
+  cursor: url("/src/assets/cursors/pokepointer.png") 12 12, pointer !important;
+}

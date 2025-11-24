@@ -13,76 +13,47 @@
   padding: 2rem;
 }
 
+/* Base Layout */
 .nf-404 {
   display: flex;
-  align-items: center; /* This keeps everything centered vertically */
+  align-items: center;
   justify-content: center;
-  gap: 2rem;
-  line-height: 1; /* Important to remove font extra spacing */
+  gap: 2.2rem;
+  line-height: 1;
 }
 
-/* Lower the 4s or raise GIF slightly */
+/* Numbers */
 .nf-404 span {
   font-size: 20rem;
-
   color: #ffcb05;
+  text-shadow: 0 0 12px #ffcb05;
   display: inline-block;
-  transform: translateY(30px); /* move both 4s DOWN a little */
-  padding-top: 0.3ch;
 }
 
-/* Optional: Raise GIF instead of lowering the 4s: choose one */
+/* Pokéball GIF */
 .nf-pokeball {
-  width: 350px;   /* Increase this value to scale up */
-  height: auto; 
+  width: 340px;
+  height: auto;
   filter: drop-shadow(0 0 12px #ff3e3e);
-  transform: translateY(7px); /* tiny upward shift */
+  transform: translateY(-12px); /* slight lift for alignment */
 }
 
-
-.nf-text {
-  margin-top: 2rem;
-  font-size: 1.2rem;
-  color: #cccccc;
-}
-
-.nf-buttons {
-  margin-top: 2rem;
-  display: flex;
-  justify-content: center;
-  gap: 3rem;
-}
-
-.nf-buttons .nes-btn {
-  font-size: 1.5rem;
-}
-
-/* ✅ Base styles you already have ... keep them unchanged above */
-
-/* ===================== */
-/* 📱 TABLETS & SMALL SCREENS */
-/* ===================== */
+/* ——————————————— */
+/* TABLETS */
 @media (max-width: 820px) {
+  .nf-404 {
+    gap: 1.5rem;
+  }
+
   .nf-404 span {
     font-size: 14rem;
-    transform: translateY(20px);
   }
 
   .nf-pokeball {
     width: 260px;
-    transform: translateY(4px);
-  }
-
-  .nf-text {
-    font-size: 1rem;
-  }
-
-  .nf-buttons .nes-btn {
-    font-size: 1.2rem;
-    padding: 0.8rem 1.4rem;
+    transform: translateY(-10px);
   }
 }
-
 /* ===================== */
 /* 📱 MOBILE PHONES */
 /* ===================== */
@@ -91,23 +62,25 @@
     padding: 1rem;
   }
 
+  /* STACK VERTICALLY */
   .nf-404 {
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
   .nf-404 span {
-    font-size: 9rem;
-    transform: translateY(12px);
+    font-size: 8rem;
+    transform: none; /* remove shifts */
   }
 
   .nf-pokeball {
     width: 180px;
-    transform: translateY(6px);
+    transform: none;
   }
 
   .nf-text {
-    font-size: 0.9rem;
-    margin-top: 1rem;
+    font-size: 1rem;
+    margin-top: 1.2rem;
   }
 
   .nf-buttons {
@@ -121,15 +94,16 @@
   }
 }
 
-/* ===================== */
-/* 📱 EXTRA SMALL (Older Phones) */
-/* ===================== */
+
+/* ——————————————— */
+/* SMALL MOBILE */
 @media (max-width: 380px) {
   .nf-404 span {
     font-size: 7rem;
   }
 
   .nf-pokeball {
-    width: 150px;
+    width: 140px;
+    transform: translateY(-4px);
   }
 }
