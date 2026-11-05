@@ -9,7 +9,9 @@ const Loader = ({ fading = false }) => {
       aria-hidden={fading || undefined}
     >
       <div className="loader-content">
-        <div className="pokeball" aria-hidden="true"></div>
+        <div className="loader-ball" aria-hidden="true">
+          <i className="nes-pokeball" />
+        </div>
         <p className="loading-text">Catching Pokémon...</p>
       </div>
     </div>

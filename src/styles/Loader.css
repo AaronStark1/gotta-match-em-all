@@ -4,10 +4,7 @@
  */
 .loader-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   background-color: #0b0b16;
   background-image:
     repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px),
@@ -32,51 +29,45 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 100px;
+  gap: 4rem;
 }
 
-/* Pokéball */
-.pokeball {
-  height: 140px;
-  width: 140px;
-  border-radius: 50%;
-  border: 8px solid #000;
-  background-image: linear-gradient(
-    to bottom,
-    #d62828 0%,
-    #d62828 47%,
-    #000 47%,
-    #000 53%,
-    #ffffff 53%,
-    #ffffff 100%
-  );
+/*
+ * nes.css pixel Poké Ball (84px of box-shadow pixel art), scaled up and doing
+ * the classic stepped "catch" wobble. Integer scale keeps every pixel crisp.
+ */
+.loader-ball {
+  width: 168px;
+  height: 168px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  animation: loaderSpin 1.4s infinite ease-in-out;
 }
 
-.pokeball:after {
-  content: "";
-  display: block;
-  height: 34px;
-  width: 34px;
-  border-radius: 50%;
-  border: 6px solid #000;
-  background: #ffffff;
-  box-shadow: 0 0 8px #000 inset;
+.loader-ball .nes-pokeball {
+  transform: scale(2);
+  transform-origin: bottom center;
+  animation: loaderWobble 1.4s steps(1, end) infinite;
 }
 
-/* Rotation animation (uniquely named: keyframe names are global) */
-@keyframes loaderSpin {
-  0% { transform: rotate(0deg) scale(2.10); }
-  50% { transform: rotate(360deg) scale(2); }
-  100% { transform: rotate(360deg) scale(2.10); }
+@keyframes loaderWobble {
+  0%,
+  40%,
+  100% {
+    transform: scale(2) rotate(0deg);
+  }
+  10%,
+  30% {
+    transform: scale(2) rotate(-14deg);
+  }
+  20% {
+    transform: scale(2) rotate(14deg);
+  }
 }
 
 /* Loading Text */
 .loading-text {
-  margin-top: 18px;
+  margin: 0;
   font-size: 0.9rem;
   color: #fff;
   text-shadow: 2px 2px #000;
@@ -87,4 +78,11 @@
 @keyframes loaderBlink {
   0%, 50% { opacity: 1; }
   50.01%, 100% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-ball .nes-pokeball,
+  .loading-text {
+    animation: none !important;
+  }
 }

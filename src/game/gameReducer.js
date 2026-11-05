@@ -28,6 +28,8 @@ export function createInitialState(difficulty = DEFAULT_DIFFICULTY) {
     startedAt: null, // ms timestamp of the first flip
     finishedAt: null, // ms timestamp of the winning flip
     bestAtStart: NO_RECORD, // stored record when this board was dealt
+    pokedexAtStart: [], // Dex numbers already in the player's Pokédex when dealt
+    caught: [], // Dex numbers matched on this board, in the order they were caught
     lastEvent: null, // { type: "flip" | "match" | "mismatch", ... } for sound + announcements
     error: null,
   };
@@ -76,6 +78,7 @@ function flipCard(state, { uniqueId, now }) {
       moves,
       matchedPairs,
       score: state.score + MATCH_POINTS,
+      caught: [...state.caught, first.id],
       startedAt,
       status: won ? "won" : "playing",
       finishedAt: won ? now : null,
@@ -86,19 +89,26 @@ function flipCard(state, { uniqueId, now }) {
         moves,
         matchedPairs,
         totalPairs: state.totalPairs,
+        delta: MATCH_POINTS,
       },
     };
   }
 
+  const score = Math.max(0, state.score - MISMATCH_PENALTY);
   return {
     ...state,
     cards,
     flipped,
     moves,
     locked: true,
-    score: Math.max(0, state.score - MISMATCH_PENALTY),
+    score,
     startedAt,
-    lastEvent: { type: "mismatch", names: [first.name, second.name], moves },
+    lastEvent: {
+      type: "mismatch",
+      names: [first.name, second.name],
+      moves,
+      delta: score - state.score, // 0 when the score is already at the floor
+    },
   };
 }
 
@@ -118,6 +128,7 @@ export function gameReducer(state, action) {
         cards: action.cards,
         totalPairs: action.cards.length / 2,
         bestAtStart: action.bestAtStart ?? NO_RECORD,
+        pokedexAtStart: Array.isArray(action.pokedexAtStart) ? action.pokedexAtStart : [],
       };
 
     case "LOAD_FAILURE":

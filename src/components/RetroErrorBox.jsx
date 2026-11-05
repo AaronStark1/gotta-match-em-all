@@ -22,7 +22,7 @@ const RetroErrorBox = ({
   return (
     <div className="retro-error-screen">
       <section
-        className="nes-container is-dark is-rounded with-title retro-error"
+        className="nes-container is-dark with-title retro-error"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}

@@ -1,0 +1,116 @@
+/*
+ * ============================================================
+ *  Card face (face-up side): vintage TCG cardstock
+ *  Shared by the board (Card) and the Help page diagram (MiniCard).
+ *  The frame around it (border, bevel, glow) belongs to the container.
+ * ============================================================
+ */
+.card-face {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px;
+  overflow: hidden;
+  color: #212529;
+  /* Warm cardstock with a faint retro halftone */
+  background-color: var(--card-face);
+  background-image: radial-gradient(rgba(12, 51, 100, 0.1) 1px, transparent 1.5px);
+  background-size: 5px 5px;
+  container-type: inline-size;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-pixel);
+  font-size: clamp(5px, 7.5cqw, 8px);
+  line-height: 1;
+}
+
+.card-dex {
+  color: var(--poke-dark-blue);
+}
+
+.card-gen {
+  padding: 1px 2px;
+  color: #fff;
+  background: var(--poke-dark-blue);
+}
+
+@container (max-width: 84px) {
+  .card-header {
+    justify-content: center;
+  }
+
+  .card-gen {
+    display: none;
+  }
+}
+
+/* Inset pixel frame around the sprite (a size container for the sprite maths below) */
+.card-frame {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  background: linear-gradient(#f4f8ff, #dbe8f5);
+  border: 2px solid var(--pixel-border);
+  box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.2), inset -2px -2px 0 rgba(255, 255, 255, 0.9);
+}
+
+/*
+ * Crisp pixel sprite. --sprite-k / --sprite-cx / --sprite-cy come from
+ * measureSpriteFit(): the 96px canvas is drawn as a square of side
+ * --side * k, positioned so the creature's opaque box is centred. Sizing
+ * (not transform) keeps the drop shadow at exactly 3px.
+ */
+.card-sprite {
+  --side: min(100cqw, 100cqh);
+  position: absolute;
+  width: calc(var(--side) * var(--sprite-k, 1));
+  height: calc(var(--side) * var(--sprite-k, 1));
+  left: calc(50% - var(--side) * var(--sprite-k, 1) * var(--sprite-cx, 0.5));
+  top: calc(50% - var(--side) * var(--sprite-k, 1) * var(--sprite-cy, 0.5));
+  max-width: none;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.3));
+}
+
+/*
+ * Sprite unavailable: a centred pixel Poké Ball (the name banner still
+ * identifies the card), kept square whatever the frame's shape.
+ */
+.card-sprite.is-fallback {
+  inset: 0;
+  margin: auto;
+  width: calc(var(--side) * 0.45);
+  height: calc(var(--side) * 0.45);
+  filter: none;
+}
+
+.card-face.is-fallback .card-frame {
+  background: repeating-linear-gradient(45deg, #fff 0 6px, #f1f1f1 6px 12px);
+}
+
+/*
+ * Name banner. Press Start 2P is monospaced (1 letter = 1em), so the font is
+ * also capped at "banner width / letters": on small cards a long name shrinks
+ * to fit one line instead of breaking mid-word.
+ */
+.card-name {
+  display: block;
+  padding: 2px 1px;
+  font-family: var(--font-pixel);
+  font-size: min(clamp(5px, 8cqw, 9px), calc((100cqw - 2px) / var(--chars, 8)));
+  line-height: 1.25;
+  text-transform: uppercase;
+  text-align: center;
+  overflow-wrap: anywhere;
+  color: var(--poke-yellow);
+  background: #212529;
+  box-shadow: 0 0 0 1px #000;
+}

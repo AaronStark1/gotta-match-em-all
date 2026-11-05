@@ -1,13 +1,33 @@
-/* ---------- Sound toggle ---------- */
-.sound-toggle {
-  min-width: 3rem;
-  line-height: 1.2;
+/* ---------- System toggles: [ 🔊 SFX ON ] [ 📺 CRT ON ] ---------- */
+.system-toggles {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-.sound-toggle span {
-  display: inline-block;
-  font-size: 1.1rem;
+.sys-toggle {
+  gap: 0.45em;
+  font-size: 0.65rem;
+  white-space: nowrap;
+}
+
+.sys-toggle .toggle-icon {
+  font-size: 1rem;
   line-height: 1;
+}
+
+/* nes.css is-success is white on light green (~1.9:1): use dark text for AA contrast */
+.sys-toggle.is-success,
+.sys-toggle.is-success:hover {
+  color: #212529;
+}
+
+/* Fixed width so ON/OFF never shifts the layout */
+.sys-toggle .toggle-state {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: left;
 }
 
 /* ---------- Difficulty selector ---------- */
@@ -16,12 +36,12 @@
   flex-direction: column;
   align-items: center;
   gap: 0.6rem;
-  font-family: "Press Start 2P", cursive;
+  font-family: var(--font-pixel);
 }
 
 .difficulty-label {
   font-size: 0.75rem;
-  color: #ffcb05;
+  color: var(--poke-yellow);
   text-shadow: 2px 2px 0 #000;
   letter-spacing: 1px;
 }
@@ -40,6 +60,7 @@
   gap: 0.35rem;
   min-width: 6.5rem;
   font-size: 0.75rem;
+  text-transform: uppercase; /* like every other arcade button */
 }
 
 .difficulty-size {
@@ -87,25 +108,33 @@
 
 /* ---------- Retro error box ---------- */
 .retro-error-screen {
+  isolation: isolate; /* keeps nes.css's z-index:-1 container frame above the backdrop */
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background-color: #11111c;
+  padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom))
+    max(1rem, var(--safe-left));
+  background-color: var(--poke-screen-bg);
   background-image:
     repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px),
     radial-gradient(circle at center, #2b2b2b, #111);
-  font-family: "Press Start 2P", cursive;
+  font-family: var(--font-pixel);
 }
 
-.retro-error {
+/* Square NES dialog with a gold pixel frame (`.nes-container` matches nes.css's specificity) */
+.nes-container.retro-error {
   max-width: 560px;
   width: 100%;
   text-align: center;
-  border-color: #ffcb05;
-  box-shadow: 0 0 0 4px #000, 0 0 18px rgba(230, 57, 70, 0.6);
+  border-color: var(--poke-yellow);
+  box-shadow: 0 0 0 4px #000, 0 0 18px rgba(238, 21, 21, 0.6);
+}
+
+.nes-container.is-dark.retro-error > .title {
+  color: var(--poke-yellow);
 }
 
 .retro-error-icon {
@@ -131,7 +160,7 @@
 .retro-error-title {
   font-size: 0.9rem;
   line-height: 1.6;
-  color: #ffcb05;
+  color: var(--poke-yellow);
   text-shadow: 2px 2px 0 #000;
   margin-bottom: 1rem;
 }
@@ -152,4 +181,5 @@
 .retro-error-buttons .nes-btn {
   min-width: 120px;
   font-size: 0.75rem;
+  text-transform: uppercase;
 }

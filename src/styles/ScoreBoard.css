@@ -1,43 +1,40 @@
+/* Arcade HUD panel inside the playfield mat (sharp NES container) */
 .scoreboard {
   width: 220px;
   text-align: left;
-  font-family: "Press Start 2P", cursive;
+  font-family: var(--font-pixel);
   font-size: 0.7rem;
   line-height: 1.6;
-
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  border: 2px solid #ffe600;
+  text-transform: uppercase;
+  transition: box-shadow 0.25s ease;
 }
 
 .scoreboard.nes-container {
-  padding: 1rem 1.25rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-color: var(--poke-yellow);
+  background-color: var(--poke-dark);
 }
 
-.scoreboard:hover {
-  transform: scale(1.03);
+/* nes.css draws the dark container's outer frame with ::after: make it a hard black pixel edge */
+.scoreboard.nes-container::after {
+  background-color: #000;
 }
 
 .scoreboard.pulse {
-  animation: pulseGlow 0.6s ease;
+  animation: pulseGlow 0.6s steps(3);
 }
 
 @keyframes pulseGlow {
   0% {
-    box-shadow: 0 0 8px #ffe600, 0 0 15px #ffae00;
+    box-shadow: 0 0 0 0 rgba(255, 203, 5, 0);
   }
   50% {
-    box-shadow: 0 0 20px #ffae00, 0 0 40px #ffe600;
+    box-shadow: 0 0 0 4px #000, 0 0 18px 4px rgba(255, 203, 5, 0.75);
   }
   100% {
-    box-shadow: 0 0 8px #ffe600, 0 0 15px #ffae00;
+    box-shadow: 0 0 0 0 rgba(255, 203, 5, 0);
   }
-}
-@keyframes slideIn {
-  from { transform: translateX(-80px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-.scoreboard.animate-once {
-  animation: slideIn 0.4s ease-out;
 }
 
 /* ---------- HUD contents ---------- */
@@ -63,21 +60,63 @@
   justify-content: space-between;
   align-items: baseline;
   gap: 0.5rem;
-  font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+  font-size: clamp(0.62rem, 1.3vw, 0.78rem);
 }
 
 .hud-stat + .hud-stat {
-  margin-top: 0.4rem;
+  margin-top: 0.45rem;
 }
 
 .hud-stat dt {
-  font-weight: bold;
   white-space: nowrap;
+  color: #fff;
+  text-shadow: var(--shadow-label);
 }
 
 .hud-stat dd {
   margin: 0;
   white-space: nowrap;
+  text-shadow: var(--shadow-label);
+}
+
+/* Floating score popups: +100 (gold) / -20 (red), one per move */
+.hud-score dd {
+  position: relative;
+}
+
+.score-popup {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  font-size: 0.7rem;
+  pointer-events: none;
+  opacity: 0;
+  animation: scorePopup 0.9s steps(6) both;
+}
+
+.score-popup.is-gain {
+  color: var(--poke-yellow);
+  text-shadow: var(--shadow-warning), 3px 3px 0 #000;
+}
+
+.score-popup.is-loss {
+  color: #ff6b6b; /* --poke-red is only 3.8:1 on the HUD */
+  text-shadow: 2px 2px 0 #000;
+}
+
+@keyframes scorePopup {
+  0% {
+    opacity: 1;
+    transform: translateY(6px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
 }
 
 .hud-best {
@@ -90,14 +129,21 @@
   font-size: 0.55rem;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .scoreboard.pulse {
+    animation: none !important;
+  }
+
+  .score-popup {
+    display: none;
+  }
+}
+
 /* Stacked layout (tablet / mobile): HUD becomes a horizontal bar */
 @media (max-width: 900px) {
   .scoreboard {
+    width: 100%;
     text-align: center;
-  }
-
-  .scoreboard:hover {
-    transform: none;
   }
 
   .hud-header {
@@ -121,6 +167,25 @@
     margin-top: 0;
   }
 
+  /*
+   * Here the label sits directly above the value, so anchor the popup to the
+   * whole stat and float it above the label instead of on top of it.
+   */
+  .hud-score {
+    position: relative;
+  }
+
+  .hud-score dd {
+    position: static;
+  }
+
+  .score-popup {
+    left: 0;
+    right: 0;
+    bottom: calc(100% + 4px);
+    text-align: center;
+  }
+
   .hud-best {
     display: flex;
     justify-content: center;
@@ -137,10 +202,74 @@
 
 @media (max-width: 480px) {
   .scoreboard.nes-container {
-    padding: 0.75rem 0.75rem;
+    padding: 0.75rem;
   }
 
   .hud-stats {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Landscape phones: the HUD is a narrow column beside the grid again (see Game.css) */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 640px) {
+  .scoreboard {
+    width: auto;
+    text-align: left;
+  }
+
+  .scoreboard.nes-container {
+    padding: 0.6rem 0.5rem;
+  }
+
+  .hud-header {
+    margin-bottom: 0.4rem;
+  }
+
+  .hud-badge.nes-badge {
+    margin: 0.3em 0;
+  }
+
+  .hud-stats,
+  .hud-best {
+    display: block;
+  }
+
+  .hud-stat,
+  .hud-stats .hud-stat,
+  .hud-best .hud-stat {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .hud-stat + .hud-stat {
+    margin-top: 0.35rem;
+  }
+
+  .hud-best {
+    margin-top: 0.5rem;
+    padding-top: 0.45rem;
+  }
+
+  .hud-best .hud-stat {
+    font-size: 0.5rem;
+  }
+
+  /* Popups go back to floating above the score value */
+  .hud-score {
+    position: static;
+  }
+
+  .hud-score dd {
+    position: relative;
+  }
+
+  .score-popup {
+    left: auto;
+    right: 0;
+    bottom: 100%;
+    text-align: right;
   }
 }

@@ -1,4 +1,87 @@
 /*
+ * ============================================================
+ *  Design tokens: 90s arcade / Game Boy palette (UI revamp §1)
+ * ============================================================
+ */
+:root {
+  --poke-yellow: #ffcb05;
+  --poke-yellow-dark: #b8860b;
+  --poke-blue: #2a75bb;
+  --poke-dark-blue: #0c3364;
+  --poke-red: #ee1515;
+  --poke-red-deep: #c8141b; /* white text on it: 5.9:1 */
+  --poke-dark: #1a1d24;
+  --poke-screen-bg: #0f1218;
+  --card-face: #fffdf2;
+  --pixel-border: #000;
+
+  --font-pixel: "Press Start 2P", cursive;
+
+  /* Text shadows */
+  --shadow-title: 3px 3px 0 var(--poke-dark-blue), 6px 6px 0 #000;
+  --shadow-warning: 2px 2px 0 var(--poke-yellow-dark);
+  --shadow-label: 1px 1px 0 #000;
+
+  /* NES pixel bevel: light top-left, dark bottom-right, hard drop shadow */
+  --bevel-inset: inset -2px -2px 0 rgba(0, 0, 0, 0.4), inset 2px 2px 0 rgba(255, 255, 255, 0.4);
+  --bevel: var(--bevel-inset), 2px 2px 0 #000;
+
+  /* Mobile ergonomics */
+  --tap-min: 44px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+html,
+body {
+  background-color: var(--poke-screen-bg);
+}
+
+/*
+ * Base typography shared by every page (moved here from LandingPage.css,
+ * unchanged). Pages refine these with their own class selectors.
+ */
+h1 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  color: #e63946;
+  letter-spacing: 2px;
+  text-shadow: 3px 3px 0 #fff;
+}
+
+p {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  color: #f8f9fa;
+}
+
+/* Pokéball icon adjustments */
+.nes-pokeball {
+  transform: scale(0.8);
+}
+
+@media (max-width: 768px) {
+  h1 {
+    text-shadow: 2px 2px 0 #e63946;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+  }
+
+  .nes-pokeball {
+    transform: scale(0.7);
+  }
+}
+
+/*
  * Cursor images go through Vite's asset pipeline via relative paths, so they
  * are inlined/hashed correctly in production builds and work under any base path.
  */
@@ -18,6 +101,63 @@ select {
 }
 
 /*
+ * ============================================================
+ *  Mobile ergonomics: no double-tap zoom delay, 44px tap targets
+ * ============================================================
+ */
+button,
+a,
+[role="button"],
+[role="switch"],
+input,
+select,
+label {
+  touch-action: manipulation;
+}
+
+.nes-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+}
+
+/*
+ * nes.css's blue (#209cee) and red (#e76e55) buttons carry white labels at
+ * ~3:1. Deepen them to the Pokémon palette so the labels pass WCAG AA
+ * (4.8:1 and 5.9:1, more on hover); the bevel shade follows suit.
+ */
+.nes-btn.is-primary {
+  background-color: var(--poke-blue);
+}
+
+.nes-btn.is-primary:hover {
+  background-color: #1f5f9e;
+}
+
+.nes-btn.is-primary::after {
+  box-shadow: inset -4px -4px var(--poke-dark-blue);
+}
+
+.nes-btn.is-primary:hover::after {
+  box-shadow: inset -6px -6px var(--poke-dark-blue);
+}
+
+.nes-btn.is-primary:active:not(.is-disabled)::after {
+  box-shadow: inset 4px 4px var(--poke-dark-blue);
+}
+
+.nes-btn.is-error {
+  background-color: var(--poke-red-deep);
+}
+
+.nes-btn.is-error:hover {
+  background-color: #a81016;
+}
+
+/*
  * Chunky pixel focus ring for keyboard users (nes.css removes the default).
  * The dark backing keeps the gold dashes visible on any background,
  * including the yellow board GIFs. `.nes-btn.nes-btn` matches the specificity
@@ -25,7 +165,7 @@ select {
  */
 .nes-btn.nes-btn:focus-visible,
 a:focus-visible {
-  outline: 3px dashed #ffcb05;
+  outline: 3px dashed var(--poke-yellow);
   outline-offset: 6px;
   box-shadow: 0 0 0 9px #212529;
 }

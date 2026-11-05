@@ -1,118 +1,703 @@
-.nf-wrapper {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
-  background: radial-gradient(circle at center, #2b2b2b, #111);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+/*
+ * ============================================================
+ *  404: a Gen-1 style battle against a wild MISSINGNO.
+ *  Page > header (SFX/CRT) + Game Boy console > bezel + screen
+ *  Screen > scene (HUDs + sprites) + panel (text box + menu)
+ *
+ *  Motion: every animation is stepped. One-shot intro animations
+ *  use fill-mode `backwards` (never forwards/both) and each
+ *  element's resting style IS its final frame, so nothing can end
+ *  stuck on a steps() penultimate frame; all are switched off
+ *  under prefers-reduced-motion (see the end of this file).
+ * ============================================================
+ */
 
-.nf-content {
+.nf-page {
+  --nf-ink: var(--poke-dark);
+  --nf-paper: var(--card-face);
+  --nf-muted: #5b6170;
+  --nf-hp-green: #36b24a;
+  --nf-hp-yellow: var(--poke-yellow);
+  --nf-hp-red: var(--poke-red);
+
+  /* Sprite widths are whole multiples of each pixel map (MISSINGNO. 54px,
+     trainer 24px, party ball 7px, cursor 4px) so every pixel stays square. */
+  --nf-missingno-w: 108px;
+  --nf-trainer-w: 96px;
+  --nf-ball-w: 48px;
+  --nf-still-w: 36px;
+  --nf-party-w: 14px;
+  --nf-cursor-w: 8px;
+  --nf-line: 3px;
+
+  --nf-text-size: clamp(0.62rem, 0.45rem + 0.9vw, 0.95rem);
+  --nf-hud-size: clamp(0.58rem, 0.42rem + 0.7vw, 0.85rem);
+  --nf-command-size: clamp(0.66rem, 0.5rem + 0.6vw, 0.9rem);
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom))
+    max(1rem, var(--safe-left));
+  background-color: var(--poke-screen-bg);
+  /* Faint 8px checkerboard: arcade carpet, not a glossy gradient */
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.025) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.025) 75%),
+    linear-gradient(45deg, rgba(255, 255, 255, 0.025) 25%, transparent 25%, transparent 75%, rgba(255, 255, 255, 0.025) 75%);
+  background-position: 0 0, 8px 8px;
+  background-size: 16px 16px;
   color: #fff;
-  padding: 2rem;
+  font-family: var(--font-pixel);
 }
 
-/* Sound toggle (top-right) */
-.nf-sound {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 2;
+/* src/index.css styles bare p/h1 app-wide; keep this page's own palette. */
+.nf-page p {
+  color: inherit;
+  font-size: inherit;
 }
 
-/* Base Layout */
-.nf-404 {
+/* ---------- Header: SFX / CRT switches, top-right ---------- */
+.nf-topbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.nf-main {
+  flex: 1 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2.2rem;
+  width: 100%;
+}
+
+/* ---------- Console bezel ---------- */
+.nf-console {
+  width: 100%;
+  max-width: 940px;
+  padding: 0.5rem 0.5rem 0.6rem;
+  background-color: var(--poke-dark-blue);
+  border: 4px solid var(--pixel-border);
+  box-shadow: var(--bevel-inset), 6px 6px 0 #000;
+}
+
+.nf-bezel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 1.75rem;
+  margin-bottom: 0.5rem;
+  padding: 0 0.25rem;
+}
+
+.nf-power {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.45rem;
+  color: #9fb3d9;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nf-power__led {
+  width: 8px;
+  height: 8px;
+  background-color: var(--poke-red);
+  box-shadow: 0 0 0 2px #000;
+}
+
+.nf-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  margin: 0;
+  font-size: clamp(0.5rem, 0.4rem + 0.35vw, 0.72rem);
+  line-height: 1.4;
+  color: #e6edf9;
+  letter-spacing: 0.05em;
+  text-shadow: var(--shadow-label);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Two-colour pinstripes either side of the label, like a handheld's bezel print */
+.nf-title::before,
+.nf-title::after {
+  content: "";
+  flex: 1;
+  min-width: 0.75rem;
+  height: 9px;
+  border-top: 3px solid var(--poke-red);
+  border-bottom: 3px solid var(--poke-yellow);
+}
+
+/* ---------- Screen ---------- */
+.nf-screen {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--nf-paper);
+  color: var(--nf-ink);
+  border: 4px solid #000;
+}
+
+.nf-scene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "enemy-hud enemy"
+    "player player-hud";
+  align-items: end;
+  column-gap: clamp(0.5rem, 3vw, 2.5rem);
+  row-gap: 0.25rem;
+  padding: clamp(0.75rem, 2.5vw, 1.75rem) clamp(0.75rem, 3.5vw, 2.75rem) 0;
+}
+
+/* ---------- Status boxes (Gen-1 HUD with corner brackets) ---------- */
+.nf-hud {
+  position: relative;
+  font-size: var(--nf-hud-size);
   line-height: 1;
 }
 
-/* Numbers */
-.nf-404 span {
-  font-size: 20rem;
-  color: #ffcb05;
-  text-shadow: 0 0 12px #ffcb05;
-  display: inline-block;
+.nf-hud p {
+  margin: 0;
 }
 
-/* Pokéball GIF */
-.nf-pokeball {
-  width: 340px;
-  height: auto;
-  filter: drop-shadow(0 0 12px #ff3e3e);
-  transform: translateY(-12px); /* slight lift for alignment */
+.nf-hud::before,
+.nf-hud::after {
+  content: "";
+  position: absolute;
 }
 
-/* ——————————————— */
-/* TABLETS */
-@media (max-width: 820px) {
-  .nf-404 {
-    gap: 1.5rem;
-  }
+/* Bracket: a 3px line down one side and along the bottom... */
+.nf-hud::before {
+  bottom: 0;
+  height: 2.3em;
+  border-bottom: var(--nf-line) solid var(--nf-ink);
+}
 
-  .nf-404 span {
-    font-size: 14rem;
-  }
+/* ...ending in a stepped pixel arrowhead (9x15px) */
+.nf-hud::after {
+  bottom: -6px;
+  width: 9px;
+  height: 15px;
+  background-color: var(--nf-ink);
+}
 
-  .nf-pokeball {
-    width: 260px;
-    transform: translateY(-10px);
+.nf-hud--enemy {
+  grid-area: enemy-hud;
+  align-self: start;
+  justify-self: start;
+  width: min(100%, 20em);
+  padding: 0 1.2em 1.05em 0;
+  animation: nfAppear 1ms steps(1, end) 0.75s backwards;
+}
+
+.nf-hud--enemy::before {
+  left: 0;
+  right: 8px;
+  border-left: var(--nf-line) solid var(--nf-ink);
+}
+
+.nf-hud--enemy::after {
+  right: 0;
+  clip-path: polygon(0 0, 3px 0, 3px 3px, 6px 3px, 6px 6px, 9px 6px, 9px 9px, 6px 9px, 6px 12px, 3px 12px, 3px 15px, 0 15px);
+}
+
+.nf-hud__name {
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.nf-hud .nf-hud__level {
+  margin-top: 0.75em;
+  padding-left: 3.5em;
+}
+
+.nf-hp {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.75em;
+  padding-left: 0.9em;
+}
+
+.nf-hp__label {
+  flex: none;
+  font-size: 0.85em;
+}
+
+.nf-hp__bar {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 5em;
+  height: 14px;
+  padding: 2px;
+  background-color: #fff;
+  border: var(--nf-line) solid var(--nf-ink);
+}
+
+/* Resting state = the final, glitched 40/404 HP (keep in sync with the JSX). */
+.nf-hp__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: var(--nf-hp-red);
+  transform: scaleX(0.1);
+  transform-origin: left center;
+  animation: nfHpDrain 1.6s steps(1, end) 1s backwards;
+}
+
+/* Drains in jerky steps, twitching back up: something is very wrong here. */
+@keyframes nfHpDrain {
+  0% {
+    transform: scaleX(1);
+    background-color: var(--nf-hp-green);
+  }
+  14% {
+    transform: scaleX(0.84);
+  }
+  26% {
+    transform: scaleX(0.9);
+  }
+  40% {
+    transform: scaleX(0.62);
+  }
+  52% {
+    transform: scaleX(0.46);
+    background-color: var(--nf-hp-yellow);
+  }
+  64% {
+    transform: scaleX(0.52);
+  }
+  76% {
+    transform: scaleX(0.24);
+  }
+  88% {
+    transform: scaleX(0.16);
+    background-color: var(--nf-hp-red);
+  }
+  100% {
+    transform: scaleX(0.1);
+    background-color: var(--nf-hp-red);
   }
 }
-/* ===================== */
-/* 📱 MOBILE PHONES */
-/* ===================== */
-@media (max-width: 540px) {
-  .nf-wrapper {
-    padding: 1rem;
-  }
 
-  /* STACK VERTICALLY */
-  .nf-404 {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
+.nf-hud--player {
+  grid-area: player-hud;
+  align-self: end;
+  justify-self: end;
+  margin-bottom: 0.9em;
+  padding: 0 0 0.85em 1.2em;
+  animation: nfAppear 1ms steps(1, end) 0.75s backwards;
+}
 
-  .nf-404 span {
-    font-size: 8rem;
-    transform: none; /* remove shifts */
-  }
+.nf-hud--player::before {
+  left: 8px;
+  right: 0;
+  height: 1.6em;
+  border-right: var(--nf-line) solid var(--nf-ink);
+}
 
-  .nf-pokeball {
-    width: 180px;
+.nf-hud--player::after {
+  left: 0;
+  clip-path: polygon(9px 0, 6px 0, 6px 3px, 3px 3px, 3px 6px, 0 6px, 0 9px, 3px 9px, 3px 12px, 6px 12px, 6px 15px, 9px 15px);
+}
+
+.nf-party {
+  display: flex;
+  gap: 0.4em;
+  padding-right: 0.75em;
+}
+
+.nf-party__ball {
+  width: var(--nf-party-w);
+}
+
+/* ---------- Sprites ---------- */
+.nf-enemy {
+  grid-area: enemy;
+  align-self: start;
+  justify-self: end;
+  animation: nfSlideFromLeft 0.72s steps(8, end) backwards;
+}
+
+.nf-enemy__sprite {
+  width: var(--nf-missingno-w);
+}
+
+.nf-player {
+  grid-area: player;
+  position: relative;
+  align-self: end;
+  justify-self: start;
+  animation: nfSlideFromRight 0.72s steps(8, end) backwards;
+}
+
+.nf-trainer {
+  width: var(--nf-trainer-w);
+}
+
+/* The thrown Poké Ball, spinning mid-flight up and right of the trainer */
+.nf-throw {
+  position: absolute;
+  left: calc(100% + var(--nf-ball-w) * 0.4);
+  bottom: 64%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--nf-ball-w);
+  height: var(--nf-ball-w);
+  animation: nfThrow 0.48s steps(1, end) 0.8s backwards;
+}
+
+/* Pixel motion dots trailing back towards the trainer's throwing hand */
+.nf-throw::before {
+  content: "";
+  position: absolute;
+  top: 82%;
+  left: 2%;
+  width: calc(var(--nf-ball-w) / 12);
+  height: calc(var(--nf-ball-w) / 12);
+  background-color: var(--nf-ink);
+  box-shadow:
+    calc(var(--nf-ball-w) * -0.2) calc(var(--nf-ball-w) * 0.22) 0 0 var(--nf-ink),
+    calc(var(--nf-ball-w) * -0.34) calc(var(--nf-ball-w) * 0.5) 0 0 var(--nf-ink);
+}
+
+.nf-throw__gif {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The GIF has empty headroom above the ball: show its bottom square */
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+
+.nf-throw .nf-throw__still {
+  display: none;
+  width: var(--nf-still-w);
+}
+
+@keyframes nfThrow {
+  0% {
+    transform: translate(-95%, 85%);
+  }
+  25% {
+    transform: translate(-60%, 20%);
+  }
+  50% {
+    transform: translate(-25%, -10%);
+  }
+  75% {
+    transform: translate(-5%, -4%);
+  }
+  100% {
     transform: none;
   }
+}
 
-  .nf-text {
-    font-size: 1rem;
-    margin-top: 1.2rem;
+@keyframes nfSlideFromLeft {
+  from {
+    transform: translateX(-320%);
   }
-
-  .nf-buttons {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .nf-buttons .nes-btn {
-    font-size: 1.1rem;
-    width: 180px;
+  to {
+    transform: none;
   }
 }
 
+@keyframes nfSlideFromRight {
+  from {
+    transform: translateX(480%);
+  }
+  to {
+    transform: none;
+  }
+}
 
-/* ——————————————— */
-/* SMALL MOBILE */
-@media (max-width: 380px) {
-  .nf-404 span {
-    font-size: 7rem;
+@keyframes nfAppear {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
+/* ---------- Bottom panel: text box + 2x2 command menu ---------- */
+.nf-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  padding: 0 0.5rem 0.5rem;
+}
+
+/* Gen-1 double rule: outer 4px line, 3px paper gap, inner 3px line */
+.nf-textbox.nes-container,
+.nf-menu.nes-container {
+  margin: 0;
+  background-color: #fff;
+  color: var(--nf-ink);
+  border: 4px solid var(--nf-ink);
+  box-shadow:
+    inset 0 0 0 3px #fff,
+    inset 0 0 0 6px var(--nf-ink);
+}
+
+.nf-textbox.nes-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  padding: 1.15em 1.4em;
+  font-size: var(--nf-text-size);
+  line-height: 2;
+}
+
+/* The message and an invisible copy of the (taller) records share one cell */
+.nf-textbox__sizer,
+.nf-textbox__content {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.nf-textbox__sizer {
+  visibility: hidden;
+}
+
+.nf-message {
+  max-width: 34em;
+}
+
+.nf-textbox .typed-message__prompt {
+  position: absolute;
+  right: 1.4em;
+  bottom: 1em;
+  width: 14px;
+  margin: 0;
+}
+
+.nf-textbox .trainer-records {
+  line-height: 1.6;
+}
+
+.nf-menu.nes-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: center;
+  gap: 0.75rem;
+  padding: 0.85rem;
+}
+
+.nf-command.nes-btn {
+  justify-content: flex-start;
+  gap: 0.6em;
+  min-width: 0;
+  min-height: 56px;
+  margin: 0;
+  padding: 0.5em 0.6em;
+  font-size: var(--nf-command-size);
+  line-height: 1.2;
+  text-align: left;
+}
+
+/* Keep the focused command's ring above its neighbours */
+.nf-command.nes-btn:focus-visible {
+  z-index: 1;
+}
+
+/* 4x7 ▶ at 2x (8x14px): about one letter tall, centred on the label line */
+.nf-command__cursor {
+  flex: none;
+  align-self: flex-start;
+  width: var(--nf-cursor-w);
+  margin-top: calc((1.2em - var(--nf-cursor-w) * 7 / 4) / 2);
+  color: var(--nf-ink);
+  visibility: hidden;
+}
+
+.nf-command.is-cursor .nf-command__cursor {
+  visibility: visible;
+}
+
+.nf-command__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45em;
+  min-width: 0;
+}
+
+.nf-command__label {
+  white-space: nowrap;
+}
+
+.nf-command__hint {
+  font-size: 0.62em;
+  color: var(--nf-muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------- Tablet / desktop ---------- */
+@media (min-width: 640px) {
+  .nf-page {
+    --nf-missingno-w: 162px;
+    --nf-trainer-w: 120px;
+    --nf-ball-w: 60px;
+    --nf-still-w: 48px;
+    --nf-party-w: 21px;
   }
 
-  .nf-pokeball {
-    width: 140px;
-    transform: translateY(-4px);
+  .nf-console {
+    padding: 0.75rem 1rem 1rem;
+  }
+
+  .nf-bezel {
+    margin-bottom: 0.75rem;
+  }
+
+  .nf-power {
+    font-size: 0.5rem;
+  }
+
+  .nf-panel {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    padding: 0 0.75rem 0.75rem;
+  }
+}
+
+@media (min-width: 1000px) and (min-height: 820px), (min-width: 700px) and (min-height: 960px) {
+  .nf-page {
+    --nf-missingno-w: 216px;
+    --nf-trainer-w: 144px;
+    --nf-ball-w: 72px;
+    --nf-still-w: 60px;
+  }
+}
+
+@media (min-width: 1200px) and (min-height: 860px) {
+  .nf-page {
+    --nf-missingno-w: 270px;
+    --nf-trainer-w: 168px;
+    --nf-ball-w: 84px;
+    --nf-still-w: 72px;
+  }
+}
+
+/* Big monitors: a bigger handheld, bigger type */
+@media (min-width: 1600px) and (min-height: 1000px) {
+  .nf-page {
+    --nf-missingno-w: 324px;
+    --nf-trainer-w: 192px;
+    --nf-ball-w: 96px;
+    --nf-still-w: 84px;
+    --nf-party-w: 28px;
+    --nf-text-size: 1.05rem;
+    --nf-hud-size: 0.95rem;
+    --nf-command-size: 1rem;
+  }
+
+  .nf-console {
+    max-width: 1120px;
+  }
+}
+
+/* ---------- Short landscape screens (phones on their side, netbooks) ---------- */
+@media (max-height: 620px) and (orientation: landscape) {
+  .nf-page {
+    --nf-missingno-w: 108px;
+    --nf-trainer-w: 72px;
+    --nf-ball-w: 40px;
+    --nf-still-w: 36px;
+    --nf-party-w: 14px;
+    --nf-text-size: 0.62rem;
+    --nf-hud-size: 0.58rem;
+    --nf-command-size: 0.66rem;
+
+    /* Switches move into a column on the right: the header row costs too much height */
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding-top: max(0.5rem, var(--safe-top));
+    padding-bottom: max(0.5rem, var(--safe-bottom));
+  }
+
+  .nf-topbar .system-toggles {
+    flex-direction: column;
+  }
+
+  .nf-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: stretch;
+  }
+
+  .nf-console {
+    padding: 0.35rem 0.6rem 0.5rem;
+  }
+
+  .nf-bezel {
+    min-height: 0;
+    margin-bottom: 0.35rem;
+  }
+
+  .nf-scene {
+    padding-top: 0.5rem;
+  }
+
+  .nf-textbox.nes-container {
+    padding: 0.8em 1.1em;
+  }
+
+  .nf-menu.nes-container {
+    gap: 0.5rem;
+    padding: 0.6rem;
+  }
+
+  .nf-command.nes-btn {
+    min-height: var(--tap-min);
+    padding-top: 0.35em;
+    padding-bottom: 0.35em;
+  }
+}
+
+/* ---------- Reduced motion: everything rests in its final state ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .nf-hud--enemy,
+  .nf-hud--player,
+  .nf-hp__fill,
+  .nf-enemy,
+  .nf-player,
+  .nf-throw {
+    animation: none !important;
+  }
+
+  /* A still ball instead of the spinning GIF */
+  .nf-throw .nf-throw__gif {
+    display: none;
+  }
+
+  .nf-throw .nf-throw__still {
+    display: block;
+  }
+}
+
+/* ---------- Windows High Contrast: keep the HP fill and bracket tips visible ---------- */
+@media (forced-colors: active) {
+  .nf-hp__fill,
+  .nf-hud::after,
+  .nf-throw::before {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+
+  .nf-throw::before {
+    box-shadow:
+      calc(var(--nf-ball-w) * -0.2) calc(var(--nf-ball-w) * 0.22) 0 0 CanvasText,
+      calc(var(--nf-ball-w) * -0.34) calc(var(--nf-ball-w) * 0.5) 0 0 CanvasText;
   }
 }

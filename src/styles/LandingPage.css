@@ -1,216 +1,819 @@
-/* Base Container Styles */
-.container {
-  background-image: url('../assets/gifs/poke-group.gif');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  min-height: 100vh;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+/* =====================================================================
+ *  TITLE SCREEN
+ * ===================================================================== */
+
+/* ---------- Page shell: header / main / footer, all in normal flow ---------- */
+.landing {
   position: relative;
-  padding: 1rem;
+  /* Own stacking context: nes.css draws .is-dark container rims at z-index -1 */
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: max(1rem, var(--safe-top)) max(1rem, var(--safe-right)) max(1rem, var(--safe-bottom))
+    max(1rem, var(--safe-left));
+  font-family: var(--font-pixel);
+  color: #fff;
   text-align: center;
+  background-color: var(--poke-screen-bg);
 }
 
-/* Centering content */
-.centering {
+/* Backdrop: the poké-group GIF, pixel-scaled, under a dark dithered tint */
+.landing::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--poke-screen-bg);
+  background-image:
+    repeating-conic-gradient(rgba(0, 0, 0, 0.3) 0 25%, transparent 0 50%),
+    linear-gradient(rgba(12, 15, 22, 0.55), rgba(12, 15, 22, 0.55)),
+    url("../assets/gifs/poke-group.gif");
+  background-size: 4px 4px, auto, cover;
+  background-position: 0 0, center, center;
+  background-repeat: repeat, no-repeat, no-repeat;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.landing-topbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.landing-main {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: clamp(1rem, 2.5vh, 1.75rem);
+  width: 100%;
+  max-width: 40rem;
+  padding: clamp(0.5rem, 1.5vh, 1.25rem) 0;
 }
-.landing-buttons {
+
+/* ---------- Arcade logo ---------- */
+.landing-hero {
   display: flex;
-  gap: 1.2rem;
-  justify-content: center;
-  margin-top: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.6vh, 1.5rem);
 }
 
-.help-btn {
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+.landing-logo-wrap {
+  position: relative;
+  /* Width-driven, but capped by height so short landscape screens keep the menu in view */
+  font-size: clamp(1.45rem, min(6.4vw, 6.4vh), 4rem);
 }
 
-.api-credit {
-  margin-top: 1.2rem;
-  font-size: 1rem;
+.landing-logo {
+  margin: 0;
+  font-family: var(--font-pixel);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffcb05;
+  text-shadow: -2px -2px 0 #2a75bb, 2px -2px 0 #2a75bb, -2px 2px 0 #2a75bb, 2px 2px 0 #2a75bb, 4px 4px 0 #0c3364, 6px 6px 0 #000;
 }
 
-
-/* Heading and text styling */
-h1 {
-  font-family: 'Press Start 2P', cursive;
-  font-size: clamp(1.5rem, 5vw, 3rem);
-  color: #e63946;
-  letter-spacing: 2px;
-  text-shadow: 3px 3px 0 #fff;
+.landing-logo-line {
+  display: block;
+  white-space: nowrap;
 }
 
-p {
-  font-size: clamp(0.8rem, 2vw, 1rem);
-  color: #f8f9fa;
-}
-
-/* Link styling */
-.link {
-  color: #ffcc00;
-  text-decoration: underline;
-  transition: color 0.3s ease;
-}
-
-.link:hover {
-  color: #fff;
-}
-
-/* Footer section (bottom info) */
-.footer {
+/*
+ * Two twinkling glints on the logo (part of the floating accents). Sizes are
+ * whole multiples of the sprite grid (7px / 5px) so pixels stay square.
+ */
+.landing-glint {
+  --landing-glint: 21px;
   position: absolute;
-  bottom: 18px;
+  display: block;
+  width: var(--landing-glint);
+  height: var(--landing-glint);
+  pointer-events: none;
+  animation: landing-glint 3.2s steps(1, end) infinite;
+}
+
+/* Centred on the top-left corner of the "G" */
+.landing-glint--a {
+  top: calc(0.2em - var(--landing-glint) / 2);
+  left: calc(var(--landing-glint) / -2);
+}
+
+/* Just past the "!" that ends the second line (11.66em wide line 1, 8.48em line 2) */
+.landing-glint--b {
+  --landing-glint: 15px;
+  bottom: 0.7em;
+  right: calc(1.65em - var(--landing-glint) - 4px);
+  animation-delay: -1.6s;
+}
+
+@media (min-width: 1200px) and (min-height: 700px) {
+  .landing-glint--a {
+    --landing-glint: 28px;
+  }
+
+  .landing-glint--b {
+    --landing-glint: 20px;
+  }
+}
+
+.landing-subtitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8em;
+  margin: 0;
+  padding: 0.75em 1.1em 0.65em;
+  font-size: clamp(0.55rem, 1.4vw, 0.75rem);
+  line-height: 1.4;
+  letter-spacing: 0.18em;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  background-color: var(--poke-dark-blue);
+  border: 3px solid var(--pixel-border);
+  box-shadow: inset 0 0 0 2px var(--poke-blue), 4px 4px 0 #000;
+}
+
+.landing-subtitle-star {
+  color: var(--poke-yellow);
+  letter-spacing: 0;
+}
+
+/* ---------- Menu panels (difficulty + Hall of Fame) ---------- */
+.landing-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1.5rem, 3vh, 2rem);
+  width: 100%;
+}
+
+.landing-menu > .nes-container {
+  --landing-panel-pt: 1.6rem;
+  width: calc(100% - 8px);
+  max-width: 34rem;
+  margin: 4px;
+  padding: var(--landing-panel-pt) 1.25rem 1.25rem;
+}
+
+/* Gold label sitting centred on the panel's top border (nes.css with-title) */
+.landing .landing-menu > .nes-container.with-title > .title {
+  --landing-title-size: clamp(0.6rem, 1.5vw, 0.75rem);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-size: clamp(0.7rem, 1.8vw, 0.9rem);
-  color: #fff;
+  gap: 0.75rem;
+  width: max-content;
+  max-width: 100%;
+  margin: calc(-1 * (var(--landing-panel-pt) + 2px + 0.8 * var(--landing-title-size))) auto 1.1rem;
+  padding: 0 0.75rem;
+  font-size: var(--landing-title-size);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--poke-yellow);
+  text-shadow: 2px 2px 0 #000;
+  background-color: #212529;
 }
 
-/* Responsive Button */
-/* .nes-btn {
-  font-size: clamp(0.8rem, 2vw, 1rem);
-  padding: 0.6rem 1.2rem;
-} */
+/*
+ * The panel title replaces the selector's own "Difficulty" caption on screen:
+ * LandingPage passes `hideLabel`, so the group stays named by it (aria-labelledby
+ * resolves hidden targets) without screen readers hearing it twice.
+ */
 
-/* Pokéball icon adjustments */
-.nes-pokeball {
-  transform: scale(0.8);
+/* ---------- Hall of Fame banner ---------- */
+.landing-hof-title .nes-icon {
+  flex: none;
 }
 
-/* ------------------- */
-/* MEDIA QUERIES BELOW */
-/* ------------------- */
-
-/* Tablets */
-@media (max-width: 768px) {
-  .container {
-    background-position: center top;
-    padding: 2rem 1rem;
-  }
-
-  h1 {
-    text-shadow: 2px 2px 0 #e63946;
-  }
-
-  .footer {
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-
-/* Mobile Phones */
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.8rem;
-  }
-
-  p {
-    font-size: 0.9rem;
-  }
-
-  .footer {
-    bottom: 10px;
-    flex-direction: column;
-    text-align: center;
-    font-size: 0.75rem;
-  }
-
-  .nes-pokeball {
-    transform: scale(0.7);
-  }
-}
-.press-start {
-  text-shadow: 2px 2px 0 #f8f9fa;
-  animation: pressStartBlink 1.2s steps(2, start) infinite;
-  
-}
-
-@keyframes pressStartBlink {
-  to {
-    visibility: hidden;
-  }
-}
-.pokeball-loader {
-  animation: bounce 1.2s infinite ease-in-out;
-  transform-origin: bottom center;
-  margin-bottom: 20px;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-
-/* Sound toggle pinned top-right */
-.landing-sound {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 2;
-}
-
-/* Difficulty selector + best record panel */
-.landing-panel.nes-container {
-  margin-top: 0.5rem;
-  padding: 1.25rem 1.5rem;
-}
-
-.landing-best {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  margin: 1rem 0 0;
-  font-size: 0.6rem;
-}
-
-.landing-best div {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.landing-best dd {
+.landing-hof-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
   margin: 0;
 }
 
-/* Reserve room so the absolutely-positioned footer never covers the menu */
-.container {
-  padding-bottom: 5rem;
+.landing-hof-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
 }
 
-/* Tablets & phones: the stacked footer joins the normal flow so it can never overlap */
-@media (max-width: 768px) {
-  .container {
-    padding-top: 4.5rem;
-    padding-bottom: 2rem;
+.landing-hof-label {
+  font-size: clamp(0.5rem, 1.1vw, 0.6rem);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* "POKéDEX" keeps its lowercase é, Gen-1 style */
+.landing-hof-label--dex {
+  text-transform: none;
+}
+
+.landing-hof-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  margin: 0;
+  font-size: clamp(0.75rem, 1.9vw, 1rem);
+  line-height: 1.2;
+  color: var(--poke-yellow);
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+}
+
+.landing-hof-value.is-empty {
+  color: #9aa0ab;
+}
+
+/* nes.css frames progress bars in near-black; redraw the same pixel frame in white for the dark panel */
+.landing-hof-progress.nes-progress {
+  display: block;
+  width: calc(100% - 8px);
+  max-width: 7.5rem;
+  height: 16px;
+  margin: 0 4px;
+  background-color: #3b3f47;
+  border-image-source: url('data:image/svg+xml;utf8,<svg version="1.1" width="5" height="5" xmlns="http://www.w3.org/2000/svg"><path d="M2 1 h1 v1 h-1 z M1 2 h1 v1 h-1 z M3 2 h1 v1 h-1 z M2 3 h1 v1 h-1 z" fill="rgb(255,255,255)" /></svg>');
+}
+
+.landing-hof-progress.nes-progress::-webkit-progress-bar {
+  background-color: #3b3f47;
+}
+
+.landing-hof-progress.nes-progress::-webkit-progress-value {
+  background-color: var(--poke-yellow);
+}
+
+.landing-hof-progress.nes-progress::-moz-progress-bar {
+  background-color: var(--poke-yellow);
+}
+
+/* ---------- Actions ---------- */
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.25rem 2rem;
+  padding: 0.5rem;
+}
+
+.landing-btn.nes-btn {
+  padding: 0.85em 1.3em 0.75em;
+  font-size: clamp(0.75rem, 1.7vw, 1rem);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  gap: 0.75em;
+}
+
+.landing-btn-icon {
+  flex: none;
+}
+
+/*
+ * Start Game: a continuous golden pixel pulse (low, mid, high, mid) behind
+ * the button, kept off the button's own box-shadow so that stays free for
+ * the focus ring. The aura's box sits on the outer edge of the 4px pixel
+ * frame nes.css draws outside the border box; its gold fill shows through
+ * the frame's notched corners.
+ *
+ * Layers (the loop only steps opacity, so it runs on the compositor):
+ *   ::before                     gold fill + the "low" rings, always on
+ *   .landing-start-glow::before  extra rings for "mid" (on at 25-50%, 75-100%)
+ *   .landing-start-glow::after   extra rings for "high" (on at 50-75%)
+ * The extra rings' alphas are chosen so that, stacked on "low", they match
+ * the original mid / high glow.
+ */
+.landing-start::before,
+.landing-start-glow {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.landing-start::before {
+  background-color: #ffcb05;
+  box-shadow:
+    0 0 0 4px #ffcb05,
+    0 0 0 8px rgba(255, 203, 5, 0.22);
+}
+
+.landing-start-glow::before,
+.landing-start-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  animation: 1.4s steps(1, end) infinite;
+}
+
+/* Mid is also the resting look when the loop is off (reduced motion) */
+.landing-start-glow::before {
+  box-shadow:
+    0 0 0 8px rgba(255, 203, 5, 0.295),
+    0 0 0 12px rgba(255, 203, 5, 0.18);
+  animation-name: landing-glow-mid;
+}
+
+.landing-start-glow::after {
+  opacity: 0;
+  box-shadow:
+    0 0 0 4px #ffe680,
+    0 0 0 8px rgba(255, 203, 5, 0.55),
+    0 0 0 12px rgba(255, 203, 5, 0.35),
+    0 0 0 16px rgba(255, 203, 5, 0.15);
+  animation-name: landing-glow-high;
+}
+
+/* Keyboard focus: push the aura out past the dashed focus ring */
+.landing-start:focus-visible::before,
+.landing-start:focus-visible .landing-start-glow {
+  inset: -16px;
+}
+
+.landing-start:focus-visible::before {
+  background-color: #212529;
+}
+
+@keyframes landing-glow-mid {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  75%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes landing-glow-high {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- PokéAPI credit ---------- */
+.landing-credit {
+  margin: 0;
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  line-height: 1.6;
+  color: #e9ecef;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.landing-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  padding: 0 0.5em;
+  color: var(--poke-yellow);
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.landing-link:hover {
+  color: #fff;
+}
+
+/* ---------- Footer ---------- */
+.landing-footer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  width: 100%;
+  padding-top: 0.75rem;
+  font-size: clamp(0.55rem, 1.2vw, 0.7rem);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.landing-footer-text {
+  margin: 0;
+  font-size: inherit;
+  line-height: 1.6;
+  color: inherit;
+}
+
+/* Gap > focus ring reach (6px offset + 3px outline) so the ring never touches the text */
+.landing-footer-repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* The ball hops inside its own reserved box, so it can never touch the text */
+.landing-footer-ball {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 42px;
+  height: 57px;
+}
+
+.landing-footer-ball-hop {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 42px;
+  height: 42px;
+  animation: landing-ball-hop 1.2s steps(1, end) infinite;
+}
+
+.landing-footer-ball .nes-pokeball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(0.5);
+  transform-origin: 0 0;
+}
+
+@keyframes landing-ball-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  12.5% {
+    transform: translateY(-6px);
+  }
+  25% {
+    transform: translateY(-12px);
+  }
+  37.5% {
+    transform: translateY(-15px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+  62.5% {
+    transform: translateY(-12px);
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+  87.5% {
+    transform: translateY(0);
+  }
+}
+
+.landing-github {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+}
+
+.landing-github .nes-icon.is-medium {
+  margin: 0 32px 32px 0;
+}
+
+/* ---------- Floating 8-bit accents in the side gutters (behind the menu) ---------- */
+.landing-accents {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-accent {
+  position: absolute;
+  display: block;
+  line-height: 0;
+  opacity: 0.85;
+}
+
+.landing-accent svg {
+  display: block;
+}
+
+.landing-accent--sparkle {
+  animation:
+    landing-drift 6s steps(6, end) infinite,
+    landing-twinkle 2.4s steps(1, end) infinite;
+}
+
+.landing-accent--ball {
+  width: 28px;
+  height: 28px;
+  opacity: 0.7;
+  animation: landing-drift-ball 8s steps(8, end) infinite;
+}
+
+.landing-accent--ball .nes-pokeball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(0.3333);
+  transform-origin: 0 0;
+}
+
+.landing-accent--1 { top: 14%; left: 7%; }
+.landing-accent--2 { top: 36%; left: 3.5%; animation-delay: -2s; }
+.landing-accent--3 { top: 24%; right: 8%; animation-delay: -3s, -1.2s; }
+.landing-accent--4 { top: 80%; left: 5%; animation-delay: -5s; }
+.landing-accent--5 { top: 52%; right: 4%; animation-delay: -6s; }
+.landing-accent--6 { top: 74%; right: 9%; animation-delay: -4.5s, -1.8s; }
+
+@keyframes landing-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, -12px);
+  }
+}
+
+@keyframes landing-drift-ball {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(8px, -16px);
+  }
+}
+
+@keyframes landing-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes landing-glint {
+  0%,
+  55% {
+    opacity: 0;
+    transform: scale(0.34);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.67);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(0.67);
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: scale(0.34);
+  }
+}
+
+/* ---------- Responsive ---------- */
+
+/* Wide but short screens (1024x768, 1366x768…): panels side by side */
+@media (min-width: 960px) and (max-height: 820px) {
+  .landing-main {
+    max-width: 62rem;
   }
 
-  .footer {
-    position: static;
-    margin-top: 1.5rem;
+  .landing-menu {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  .landing-menu > .nes-container {
+    flex: 1 1 0;
+    max-width: 30rem;
+  }
+
+  /* These two would sit behind the wider panel row */
+  .landing-accent--2,
+  .landing-accent--5 {
+    display: none;
+  }
+}
+
+/*
+ * Landscape phones (844x390, 740x360…): logo and subtitle on one row, panels
+ * side by side and tighter spacing, so Start Game stays above the fold.
+ */
+@media (min-width: 640px) and (max-height: 500px) {
+  .landing {
+    padding-top: max(0.5rem, var(--safe-top));
+    padding-bottom: max(0.5rem, var(--safe-bottom));
+  }
+
+  .landing-main {
+    max-width: 62rem;
+    gap: 0.6rem;
+    padding-block: 0;
+  }
+
+  .landing-hero {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
+  .landing-logo-wrap {
+    font-size: clamp(1.1rem, 5.2vh, 1.6rem);
+  }
+
+  .landing-menu {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .landing-menu > .nes-container {
+    flex: 1 1 0;
+    max-width: 30rem;
+    --landing-panel-pt: 1.25rem;
+    padding-inline: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .landing-panel .difficulty-option {
+    min-width: 0;
+    padding-inline: 0.5rem;
+  }
+
+  .landing-actions {
+    padding-block: 0.25rem;
+  }
+
+  /* These would sit behind the panel row */
+  .landing-accent--2,
+  .landing-accent--5 {
+    display: none;
+  }
+}
+
+/* Side gutters too narrow for drifting accents: keep just the logo glints */
+@media (max-width: 760px) {
+  .landing-accents {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .landing-footer {
+    flex-direction: column;
+    gap: 0.35rem;
   }
 }
 
 @media (max-width: 480px) {
-  .landing-panel.nes-container {
-    padding: 1rem 0.75rem;
+  .landing-menu > .nes-container {
+    --landing-panel-pt: 1.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 1rem;
+    padding-left: 0.5rem;
+  }
+
+  .landing-hof-stats {
+    gap: 0.5rem;
+  }
+
+  .landing-actions {
+    gap: 1.25rem 1.5rem;
+  }
+}
+
+/* Small phones: keep Start + Help on one row (the aura still clears Help) */
+@media (max-width: 400px) {
+  .landing-actions {
+    gap: 1.25rem;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .landing-btn.nes-btn {
+    padding: 0.85em 0.9em 0.75em;
+    font-size: 0.7rem;
+    letter-spacing: 0;
+    gap: 0.6em;
+  }
+}
+
+/* Big screens: scale the whole menu up a notch */
+@media (min-width: 1600px) and (min-height: 1000px) {
+  .landing-main {
+    max-width: 48rem;
+  }
+
+  .landing-logo-wrap {
+    font-size: clamp(1.45rem, min(6.4vw, 6.4vh), 4.5rem);
+  }
+
+  .landing-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .landing-menu > .nes-container {
+    max-width: 38rem;
+  }
+
+  .landing .landing-menu > .nes-container.with-title > .title {
+    --landing-title-size: 0.85rem;
+  }
+
+  .landing-panel .difficulty-option {
+    min-width: 7.75rem;
+    font-size: 0.875rem;
+  }
+
+  .landing-panel .difficulty-size {
+    font-size: 0.65rem;
+  }
+
+  .landing-hof-label {
+    font-size: 0.65rem;
+  }
+
+  .landing-hof-value {
+    font-size: 1.15rem;
+  }
+
+  .landing-btn.nes-btn {
+    font-size: 1.1rem;
+  }
+
+  .landing-credit,
+  .landing-footer {
+    font-size: 0.75rem;
+  }
+}
+
+/* ---------- Reduced motion: static glow and glints, nothing drifts or hops ---------- */
+@media (prefers-reduced-motion: reduce) {
+  /* The looping GIF becomes a still first frame (set by LandingPage) */
+  .landing::before {
+    background-image:
+      repeating-conic-gradient(rgba(0, 0, 0, 0.3) 0 25%, transparent 0 50%),
+      linear-gradient(rgba(12, 15, 22, 0.55), rgba(12, 15, 22, 0.55)),
+      var(--landing-still, none);
+  }
+
+  .landing-start-glow::before,
+  .landing-start-glow::after,
+  .landing-footer-ball-hop,
+  .landing-accent,
+  .landing-glint {
+    animation: none !important;
   }
 }

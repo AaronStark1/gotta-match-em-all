@@ -1,0 +1,21 @@
+/*
+ * Lightweight CSS CRT shader: 3px scanlines + edge vignette.
+ * Static (no flicker), click-through, and drawn above everything,
+ * including the win-screen confetti canvas.
+ */
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483000;
+  background:
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    radial-gradient(circle at center, transparent 65%, rgba(0, 0, 0, 0.45) 100%);
+  background-size: 100% 3px, 100% 100%;
+}
+
+@media print, (forced-colors: active) {
+  .crt-overlay {
+    display: none;
+  }
+}

@@ -6,12 +6,15 @@ import 'nes.css/css/nes.min.css'
 import './index.css'
 import App from './App.jsx'
 import SoundProvider from './audio/SoundProvider.jsx'
+import CrtProvider from './display/CrtProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <SoundProvider>
-        <App />
+        <CrtProvider>
+          <App />
+        </CrtProvider>
       </SoundProvider>
     </BrowserRouter>
   </StrictMode>,

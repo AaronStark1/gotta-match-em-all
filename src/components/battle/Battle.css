@@ -1,0 +1,199 @@
+/*
+ * Battle-screen building blocks (used by the 404 page): pixel sprites, the
+ * glitching MISSINGNO., Game Boy "printed" text and the records table.
+ * Every animation here is stepped and switched off under reduced motion.
+ * Looping blinks step `opacity` (not `visibility`) so the compositor runs
+ * them without restyling the page every frame.
+ * One-shot animations use fill-mode `backwards`, never `forwards`/`both`: the
+ * resting (un-animated) style IS the finished state, so when an animation
+ * ends the element can't get stuck on a steps() penultimate frame.
+ */
+
+.pixel-sprite,
+.missingno {
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+/* ---------- MISSINGNO. glitch flicker ---------- */
+.missingno__frame--1,
+.missingno__frame--2 {
+  opacity: 0;
+}
+
+/* Every 5s the sprite corrupts for ~0.4s: rest -> A -> B -> A -> rest. */
+.missingno__frame {
+  animation-duration: 5s;
+  animation-timing-function: steps(1, end);
+  animation-delay: 3s;
+  animation-iteration-count: infinite;
+}
+
+.missingno__frame--0 {
+  animation-name: missingnoRest;
+}
+
+.missingno__frame--1 {
+  animation-name: missingnoGlitchA;
+}
+
+.missingno__frame--2 {
+  animation-name: missingnoGlitchB;
+}
+
+@keyframes missingnoRest {
+  0%,
+  85.9% {
+    opacity: 1;
+  }
+  86%,
+  93.9% {
+    opacity: 0;
+  }
+  94%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes missingnoGlitchA {
+  0%,
+  85.9% {
+    opacity: 0;
+  }
+  86%,
+  88.9% {
+    opacity: 1;
+  }
+  89%,
+  90.9% {
+    opacity: 0;
+  }
+  91%,
+  93.9% {
+    opacity: 1;
+  }
+  94%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes missingnoGlitchB {
+  0%,
+  88.9% {
+    opacity: 0;
+  }
+  89%,
+  90.9% {
+    opacity: 1;
+  }
+  91%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Printed text ---------- */
+/* Explicit colour/size so app-wide bare `p` rules can't restyle the text */
+.typed-message {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* Letters are generated content: on screen only, never duplicated in the DOM text */
+.typed-message__char::before {
+  content: attr(data-char);
+}
+
+.typed-message__char {
+  animation: typedCharIn 1ms steps(1, end) backwards;
+  animation-delay: calc(var(--typed-index, 0) * var(--typed-speed, 32ms));
+}
+
+@keyframes typedCharIn {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
+/* ▼ "more text" arrow: waits for the last letter, then blinks. */
+.typed-message__prompt {
+  display: inline-block;
+  width: 14px;
+  margin-left: 0.6em;
+  vertical-align: baseline;
+  animation: typedPrompt 0.9s steps(1, end) infinite backwards;
+  animation-delay: calc(var(--typed-chars, 0) * var(--typed-speed, 32ms));
+}
+
+@keyframes typedPrompt {
+  0%,
+  49.9% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* ---------- Trainer records (POKéMON command) ---------- */
+.trainer-records {
+  width: 100%;
+}
+
+.trainer-records__table {
+  width: 100%;
+  border-collapse: collapse;
+  line-height: 1.6;
+}
+
+.trainer-records__table th,
+.trainer-records__table td {
+  padding: 0.1em 0 0.1em 1.25em;
+  font-weight: normal;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.trainer-records__table th:first-child {
+  padding-left: 0;
+  text-align: left;
+}
+
+.trainer-records__table thead th {
+  padding-bottom: 0.35em;
+  font-size: 0.75em;
+  color: #5b6170;
+  text-transform: uppercase;
+}
+
+.trainer-records__table tbody th {
+  text-transform: uppercase;
+}
+
+.trainer-records__dex {
+  color: inherit;
+  font-size: inherit;
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin: 0.45em 0 0;
+  padding-top: 0.45em;
+  border-top: 3px dotted currentColor;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .missingno__frame,
+  .typed-message__char,
+  .typed-message__prompt {
+    animation: none !important;
+  }
+}

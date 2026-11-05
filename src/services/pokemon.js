@@ -3,7 +3,7 @@ import {
   MAX_POKEMON_ID,
   POKEAPI_BASE,
   REQUEST_TIMEOUT_MS,
-  artworkUrl,
+  spriteUrl,
 } from "../config/api";
 import cardFrontImage from "../assets/card_front_pixel.jpeg";
 import { formatPokemonName } from "../utils/format";
@@ -13,7 +13,7 @@ import { readJSON, writeJSON } from "../utils/storage";
 /** Bump when the cached species payload shape changes. */
 const SPECIES_CACHE_KEY = "species:v1";
 
-/** Artwork that fails to load is swapped for another Pokémon this many times. */
+/** A sprite that fails to load is swapped for another Pokémon this many times. */
 const MAX_IMAGE_ATTEMPTS = 2;
 
 let speciesNames = null; // Map<id, slug>, shared across games in this session
@@ -132,13 +132,14 @@ export function fetchSpeciesNames(signal) {
 }
 
 /**
- * Resolve with a decoded HTMLImageElement, or `null` if the image failed,
- * timed out or was aborted. Never rejects.
+ * Load an image without ever rejecting. Resolves { image, failure }: the
+ * decoded HTMLImageElement (or null) and, on failure, why: "error",
+ * "timeout" or "abort".
  */
-export function preloadImage(src, { signal, timeout = IMAGE_TIMEOUT_MS } = {}) {
+function loadImage(src, { signal, timeout = IMAGE_TIMEOUT_MS, crossOrigin } = {}) {
   return new Promise((resolve) => {
     if (signal?.aborted) {
-      resolve(null);
+      resolve({ image: null, failure: "abort" });
       return;
     }
 
@@ -146,22 +147,22 @@ export function preloadImage(src, { signal, timeout = IMAGE_TIMEOUT_MS } = {}) {
     let settled = false;
     let timer = null;
 
-    const finish = (result) => {
+    const finish = (image, failure = null) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
       signal?.removeEventListener("abort", onAbort);
       img.onload = null;
       img.onerror = null;
-      resolve(result);
+      resolve({ image, failure });
     };
 
     function onAbort() {
-      finish(null);
+      finish(null, "abort");
       img.src = "";
     }
 
-    timer = setTimeout(() => finish(null), timeout);
+    timer = setTimeout(() => finish(null, "timeout"), timeout);
     signal?.addEventListener("abort", onAbort, { once: true });
     img.onload = () => {
       if (typeof img.decode !== "function") {
@@ -173,14 +174,93 @@ export function preloadImage(src, { signal, timeout = IMAGE_TIMEOUT_MS } = {}) {
         () => finish(img)
       );
     };
-    img.onerror = () => finish(null);
+    img.onerror = () => finish(null, "error");
     img.decoding = "async";
+    if (crossOrigin) img.crossOrigin = crossOrigin;
     img.src = src;
   });
 }
 
 /**
- * Build a shuffled deck of `pairs * 2` cards whose artwork is already loaded,
+ * Resolve with a decoded HTMLImageElement, or `null` if the image failed,
+ * timed out or was aborted. Never rejects.
+ */
+export async function preloadImage(src, options) {
+  return (await loadImage(src, options)).image;
+}
+
+/**
+ * Sprites load in CORS mode so measureSpriteFit() can read their pixels. If
+ * the host ever stopped sending CORS headers, that request would be blocked
+ * outright, so a failed CORS load is retried once as a plain image: it still
+ * displays, just without the auto-framing (`cors: false`). Timeouts and
+ * aborts are not retried, so a slow sprite never costs two timeouts.
+ */
+async function loadSprite(id, signal) {
+  const url = spriteUrl(id);
+  const corsLoad = await loadImage(url, { signal, crossOrigin: "anonymous" });
+  if (corsLoad.image) return { image: corsLoad.image, cors: true };
+  if (corsLoad.failure !== "error") return null;
+  const plainLoad = await loadImage(url, { signal });
+  return plainLoad.image ? { image: plainLoad.image, cors: false } : null;
+}
+
+const ALPHA_THRESHOLD = 16;
+const round3 = (value) => Math.round(value * 1000) / 1000;
+
+/**
+ * Sprites are 96x96 canvases with lots of transparent padding, so creatures
+ * would render tiny. Measure the opaque bounding box once (CORS-loaded
+ * sprites only: their pixels are readable) and return how to zoom/centre it:
+ * { k: zoom factor, cx/cy: box centre as a fraction of the canvas }.
+ * Returns null whenever measuring isn't possible; cards then show the plain
+ * centred sprite.
+ */
+function measureSpriteFit(img) {
+  try {
+    const width = img?.naturalWidth;
+    const height = img?.naturalHeight;
+    if (!width || !height || typeof document === "undefined") return null;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0);
+    const { data } = ctx.getImageData(0, 0, width, height);
+
+    let minX = width;
+    let minY = height;
+    let maxX = -1;
+    let maxY = -1;
+    for (let y = 0; y < height; y += 1) {
+      for (let x = 0; x < width; x += 1) {
+        if (data[(y * width + x) * 4 + 3] > ALPHA_THRESHOLD) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (maxX < 0) return null;
+
+    const boxWidth = maxX - minX + 1;
+    const boxHeight = maxY - minY + 1;
+    // Fill ~90% of the frame width / ~86% of its height (room for the drop shadow).
+    const fit = Math.min((0.9 * width) / boxWidth, (0.86 * height) / boxHeight);
+    return {
+      k: round3(Math.min(3, Math.max(0.9, fit))),
+      cx: round3((minX + boxWidth / 2) / width),
+      cy: round3((minY + boxHeight / 2) / height),
+    };
+  } catch {
+    return null; // unexpected canvas failure: show the plain centred sprite
+  }
+}
+
+/**
+ * Build a shuffled deck of `pairs * 2` cards whose sprites are already loaded,
  * so no card ever flips to a blank face.
  */
 export async function createBoard(pairs, { signal } = {}) {
@@ -197,39 +277,47 @@ export async function createBoard(pairs, { signal } = {}) {
   let failed = [];
 
   for (let attempt = 1; ; attempt += 1) {
-    const images = await Promise.all(
-      candidates.map((id) => preloadImage(artworkUrl(id), { signal }))
-    );
+    const sprites = await Promise.all(candidates.map((id) => loadSprite(id, signal)));
     throwIfAborted(signal);
 
     failed = [];
     candidates.forEach((id, index) => {
-      if (images[index]) loaded.push({ id, image: images[index] });
+      if (sprites[index]) loaded.push({ id, ...sprites[index] });
       else failed.push(id);
     });
 
     if (failed.length === 0 || attempt >= MAX_IMAGE_ATTEMPTS) break;
-    // Swap Pokémon whose artwork is missing for fresh picks.
+    // Swap Pokémon whose sprite is missing for fresh picks.
     candidates = pickDistinct(pool, failed.length, used);
     if (candidates.length === 0) break;
   }
 
   if (loaded.length === 0) {
-    throw new Error("Couldn't load any Pokémon artwork. Check your connection.");
+    throw new Error("Couldn't load any Pokémon sprites. Check your connection.");
   }
 
   const cardFront = await cardFrontPromise;
   throwIfAborted(signal);
 
   const pokemon = [
-    ...loaded.map(({ id }) => ({ id, imageFailed: false })),
+    ...loaded.map(({ id, image, cors }) => ({
+      id,
+      imageFailed: false,
+      cors,
+      spriteFit: cors ? measureSpriteFit(image) : null,
+    })),
     // Still missing after retries: show a Poké Ball + name so the pair stays matchable.
-    ...failed.slice(0, pairs - loaded.length).map((id) => ({ id, imageFailed: true })),
-  ].map(({ id, imageFailed }) => ({
+    ...failed
+      .slice(0, pairs - loaded.length)
+      .map((id) => ({ id, imageFailed: true, cors: false, spriteFit: null })),
+  ].map(({ id, imageFailed, cors, spriteFit }) => ({
     id,
     name: formatPokemonName(names.get(id)),
-    image: artworkUrl(id),
+    image: spriteUrl(id),
     imageFailed,
+    // Render each <img> in the mode it was preloaded in, so it reuses that request.
+    cors,
+    spriteFit,
   }));
 
   const cards = shuffle([...pokemon, ...pokemon]).map((card, index) => ({

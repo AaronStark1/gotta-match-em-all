@@ -1,19 +1,27 @@
 import useSound from "../audio/useSound";
 import "../styles/Controls.css";
 
+/** `[ 🔊 SFX ON ]` switch. Accessible name "SFX"; state is exposed via aria-checked. */
 const SoundToggle = ({ className = "" }) => {
   const { muted, toggleMuted } = useSound();
+  const on = !muted;
 
   return (
     <button
       type="button"
-      className={`nes-btn sound-toggle ${className}`}
+      role="switch"
+      aria-checked={on}
+      className={`nes-btn sys-toggle sound-toggle ${on ? "is-warning" : ""} ${className}`}
       onClick={toggleMuted}
-      aria-pressed={muted}
-      aria-label="Mute sound"
-      title={muted ? "Sound off: click to unmute" : "Sound on: click to mute"}
+      title={on ? "Sound effects on: click to mute" : "Sound effects off: click to unmute"}
     >
-      <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+      <span className="toggle-icon" aria-hidden="true">
+        {on ? "🔊" : "🔇"}
+      </span>
+      <span className="toggle-label">SFX</span>
+      <span className="toggle-state" aria-hidden="true">
+        {on ? "ON" : "OFF"}
+      </span>
     </button>
   );
 };
