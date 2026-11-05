@@ -1,12 +1,15 @@
-// src/components/Loader.jsx
-import React from "react";
 import "../styles/Loader.css";
 
-const Loader = ({ fading }) => {
+const Loader = ({ fading = false }) => {
   return (
-    <div className={`loader-overlay ${fading ? "fade-out" : ""}`}>
+    <div
+      className={`loader-overlay ${fading ? "fade-out" : ""}`}
+      role="status"
+      aria-live="polite"
+      aria-hidden={fading || undefined}
+    >
       <div className="loader-content">
-        <div className="pokeball"></div>
+        <div className="pokeball" aria-hidden="true"></div>
         <p className="loading-text">Catching Pokémon...</p>
       </div>
     </div>

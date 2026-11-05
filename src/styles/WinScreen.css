@@ -92,3 +92,53 @@
 }
 
 
+/* Difficulty + record badges */
+.win-box {
+  max-height: 96vh;
+  overflow-y: auto;
+}
+
+.win-mode {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.7rem;
+}
+
+.win-badge.nes-badge {
+  width: 7.5em;
+  margin: 0.5em 0;
+  font-size: 0.65rem;
+}
+
+.win-size {
+  color: #ffcb05;
+}
+
+.new-best.nes-badge {
+  width: 9.5em;
+  margin: 0 0 0 0.75rem;
+  font-size: 0.5rem;
+  vertical-align: middle;
+  /* Finite blink (WCAG 2.2.2): flashes for ~4s, then stays visible */
+  animation: newBestBlink 1s steps(2, start) 4;
+}
+
+@keyframes newBestBlink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.win-best {
+  margin-top: 0.6rem;
+}
+
+@media (max-width: 600px) {
+  .new-best.nes-badge {
+    display: table;
+    margin: 0.6rem auto 0.2rem;
+  }
+}

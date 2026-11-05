@@ -1,0 +1,155 @@
+/* ---------- Sound toggle ---------- */
+.sound-toggle {
+  min-width: 3rem;
+  line-height: 1.2;
+}
+
+.sound-toggle span {
+  display: inline-block;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* ---------- Difficulty selector ---------- */
+.difficulty-selector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: "Press Start 2P", cursive;
+}
+
+.difficulty-label {
+  font-size: 0.75rem;
+  color: #ffcb05;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+
+.difficulty-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.difficulty-option {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 6.5rem;
+  font-size: 0.75rem;
+}
+
+.difficulty-size {
+  font-size: 0.55rem;
+  opacity: 0.85;
+}
+
+/* Compact variant: sits inline in the game's control row (wraps on phones) */
+.difficulty-selector.is-compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.difficulty-selector.is-compact .difficulty-label {
+  font-size: 0.6rem;
+}
+
+.difficulty-selector.is-compact .difficulty-option {
+  flex-direction: row;
+  min-width: 0;
+  font-size: 0.6rem;
+  padding: 4px 8px;
+}
+
+.difficulty-selector.is-compact .difficulty-size {
+  font-size: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .difficulty-option {
+    min-width: 5.2rem;
+    font-size: 0.6rem;
+  }
+
+  .difficulty-selector.is-compact .difficulty-option {
+    font-size: 0.5rem;
+  }
+
+  .difficulty-selector.is-compact .difficulty-size {
+    display: none;
+  }
+}
+
+/* ---------- Retro error box ---------- */
+.retro-error-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: #11111c;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at center, #2b2b2b, #111);
+  font-family: "Press Start 2P", cursive;
+}
+
+.retro-error {
+  max-width: 560px;
+  width: 100%;
+  text-align: center;
+  border-color: #ffcb05;
+  box-shadow: 0 0 0 4px #000, 0 0 18px rgba(230, 57, 70, 0.6);
+}
+
+.retro-error-icon {
+  display: block;
+  margin: 0.5rem auto 1.25rem;
+  animation: retroWobble 1.2s steps(4) infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes retroWobble {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-12deg);
+  }
+  75% {
+    transform: rotate(12deg);
+  }
+}
+
+.retro-error-title {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #ffcb05;
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 1rem;
+}
+
+.retro-error-message {
+  font-size: 0.7rem;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.retro-error-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.retro-error-buttons .nes-btn {
+  min-width: 120px;
+  font-size: 0.75rem;
+}

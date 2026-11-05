@@ -134,11 +134,11 @@ p {
 }
 .press-start {
   text-shadow: 2px 2px 0 #f8f9fa;
-  animation: blink 1.2s steps(2, start) infinite;
+  animation: pressStartBlink 1.2s steps(2, start) infinite;
   
 }
 
-@keyframes blink {
+@keyframes pressStartBlink {
   to {
     visibility: hidden;
   }
@@ -158,3 +158,59 @@ p {
   }
 }
 
+
+/* Sound toggle pinned top-right */
+.landing-sound {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+}
+
+/* Difficulty selector + best record panel */
+.landing-panel.nes-container {
+  margin-top: 0.5rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.landing-best {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 1rem 0 0;
+  font-size: 0.6rem;
+}
+
+.landing-best div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.landing-best dd {
+  margin: 0;
+}
+
+/* Reserve room so the absolutely-positioned footer never covers the menu */
+.container {
+  padding-bottom: 5rem;
+}
+
+/* Tablets & phones: the stacked footer joins the normal flow so it can never overlap */
+@media (max-width: 768px) {
+  .container {
+    padding-top: 4.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-panel.nes-container {
+    padding: 1rem 0.75rem;
+  }
+}

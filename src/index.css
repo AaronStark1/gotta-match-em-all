@@ -1,5 +1,9 @@
+/*
+ * Cursor images go through Vite's asset pipeline via relative paths, so they
+ * are inlined/hashed correctly in production builds and work under any base path.
+ */
 * {
-  cursor: url("/src/assets/cursors/pokecursor.png") 12 12, auto;
+  cursor: url("./assets/cursors/pokecursor.png") 12 12, auto;
 }
 
 button.nes-btn,
@@ -10,5 +14,50 @@ a,
 .clickable,
 input,
 select {
-  cursor: url("/src/assets/cursors/pokepointer.png") 12 12, pointer !important;
+  cursor: url("./assets/cursors/pokepointer.png") 12 12, pointer !important;
+}
+
+/*
+ * Chunky pixel focus ring for keyboard users (nes.css removes the default).
+ * The dark backing keeps the gold dashes visible on any background,
+ * including the yellow board GIFs. `.nes-btn.nes-btn` matches the specificity
+ * of nes.css's coloured `.nes-btn.is-*:focus` halos so this rule wins.
+ */
+.nes-btn.nes-btn:focus-visible,
+a:focus-visible {
+  outline: 3px dashed #ffcb05;
+  outline-offset: 6px;
+  box-shadow: 0 0 0 9px #212529;
+}
+
+/*
+ * nes.css positions a badge's coloured span absolutely without `left`, so in
+ * any text-align:center context it drifts half a badge to the right.
+ */
+.nes-badge > span:first-child {
+  left: 0;
+}
+
+/* Hidden visually but still read by screen readers. */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

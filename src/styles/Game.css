@@ -4,7 +4,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background:center/cover no-repeat;
+  background: center/cover no-repeat;
+  background-color: #11111c; /* shown until the background GIF arrives */
   padding: 1rem;
   color: white;
   text-align: center;
@@ -18,54 +19,76 @@
   text-shadow: 2px 2px 0 #ff0000;
 }
 
-.game-layout {
+.game-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+  align-items: center;
+}
+
+/*
+ * Board layout: scoreboard and grid are flex siblings, so they can never
+ * overlap. An invisible spacer mirrors the scoreboard to keep the grid
+ * centred on wide screens; it shrinks away first as space runs out.
+ */
+.grid-wrapper {
+  --card-max: 145px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(80px, 1fr));
-  gap: 12px;
-  max-width: 580px;   /* ← restores original grid width */
-  width: 90%;         /* ← allows scaling nicely */
-  margin: 0 auto;     /* ← keeps it centered */
-}
-
-.grid-wrapper {
-  position: relative;
-  display: flex;
-  justify-content: center;
+  gap: 1.5rem;
   width: 100%;
   margin: 0 auto;
 }
 
+.grid-wrapper::after {
+  content: "";
+  flex: 0 100 220px;
+}
 
-/* Scoreboard anchored left of grid */
 .grid-wrapper > .scoreboard {
-  position: absolute !important;
-  left: 5%;
-  top: 0;
-  z-index: 50;
-  width: 16%;
-  height: auto;
+  flex: 0 0 220px;
 }
 
+.grid {
+  flex: 0 1 calc(var(--cols, 4) * var(--card-max));
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+  gap: 12px;
+}
 
-
-
-
-/* Card flip effect */
+/* Card: a reset <button> so it is focusable and keyboard-operable */
 .card {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
   perspective: 800px;
-  cursor: pointer;
+  animation: fadeInUp 0.5s ease both;
+  -webkit-tap-highlight-color: transparent;
 }
-.card {
-  animation: fadeInUp 0.5s ease forwards;
-  opacity: 0;
+
+.card:focus {
+  outline: none;
+}
+
+.card:focus-visible {
+  outline: 3px dashed #ffcb05;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px #212529; /* dark backing so the ring shows on any background */
+}
+
+/* Matched cards already glow gold: switch the ring to white so focus stays obvious */
+.card.matched:focus-visible {
+  outline-color: #fff;
 }
 
 @keyframes fadeInUp {
@@ -81,8 +104,9 @@
 
 .card-inner {
   position: relative;
+  display: block;
   width: 100%;
-  padding-top: 120%; /* keeps it square */
+  padding-top: 120%;
   transform-style: preserve-3d;
   transition: transform 0.5s;
 }
@@ -100,10 +124,12 @@
   bottom: 0;
   border: 2px solid #fff;
   border-radius: 8px;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
 .card-front {
+  display: block;
   background: url('../assets/card_front_pixel.jpeg');
   background-position: center;
   background-size: cover;
@@ -112,7 +138,8 @@
   transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-.card-front:hover {
+.card:not(.flipped):hover .card-front,
+.card:not(.flipped):focus-visible .card-front {
   filter: brightness(1.6);
   transform: scale(1.05);
   transition: all 0.2s ease;
@@ -130,49 +157,148 @@
   width: 100%;
 }
 
-/* Mobile Layout */
-@media (max-width: 700px) {
+/* Artwork unavailable: pixel Poké Ball placeholder (name is always shown) */
+.card-back.is-fallback {
+  background: repeating-linear-gradient(45deg, #fff 0 6px, #f1f1f1 6px 12px);
+}
 
+.card-back .card-fallback-img {
+  width: 45%;
+  margin-bottom: 25%;
+  image-rendering: pixelated;
+}
+
+/* Matched: golden pixel pulse, then a steady glow */
+.card.matched .card-back {
+  border-color: #ffcb05;
+  box-shadow: 0 0 0 2px #000, 0 0 0 5px #ffcb05, 0 0 14px 4px rgba(255, 203, 5, 0.65);
+  animation: matchPulse 0.9s steps(6) 0.35s both;
+}
+
+@keyframes matchPulse {
+  0% {
+    transform: rotateY(180deg) scale(1);
+    box-shadow: 0 0 0 2px #000, 0 0 0 2px #ffcb05, 0 0 0 0 rgba(255, 203, 5, 0);
+  }
+  50% {
+    transform: rotateY(180deg) scale(1.07);
+    box-shadow: 0 0 0 2px #000, 0 0 0 9px #ffcb05, 0 0 26px 10px rgba(255, 203, 5, 0.9);
+  }
+  100% {
+    transform: rotateY(180deg) scale(1);
+    box-shadow: 0 0 0 2px #000, 0 0 0 5px #ffcb05, 0 0 14px 4px rgba(255, 203, 5, 0.65);
+  }
+}
+
+.card-name {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  padding: 3px 2px;
+  background: #212529;
+  color: #ffcb05;
+  font-family: "Press Start 2P", cursive;
+  font-size: clamp(0.4rem, 0.9vw, 0.55rem);
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+  box-shadow: 0 0 0 2px #ffcb05;
+}
+
+.card.matched .card-name {
+  animation: nameDrop 0.4s steps(4) 0.5s both;
+}
+
+@keyframes nameDrop {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/*
+ * Reduced motion: skip the stepped match animations entirely. (The global
+ * 0.01ms override leaves steps() fill-mode animations parked on their
+ * penultimate frame, e.g. a 75%-opacity name banner.)
+ */
+@media (prefers-reduced-motion: reduce) {
+  .card.matched .card-back,
+  .card.matched .card-name {
+    animation: none !important;
+  }
+}
+
+/*
+ * Desktop side-by-side layout: also cap the board by viewport height so the
+ * last row of a 4-row board is never below the fold on laptop screens.
+ * --fit-card = card width at which all rows (cards are 1.2x taller than wide)
+ * plus gaps fit under the title + controls (~170px).
+ */
+@media (min-width: 901px) {
+  .grid {
+    --fit-card: calc((100vh - 170px - (var(--rows, 4) - 1) * 12px) / (1.2 * var(--rows, 4)));
+    flex-basis: clamp(
+      calc(var(--cols, 4) * 80px),
+      calc(var(--cols, 4) * var(--fit-card) + (var(--cols, 4) - 1) * 12px),
+      calc(var(--cols, 4) * var(--card-max))
+    );
+  }
+}
+
+/* Tablet & below: stack the scoreboard above the grid */
+@media (max-width: 900px) {
   .grid-wrapper {
-    display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 1.25rem;
   }
 
-  .grid-wrapper > .scoreboard {
-    position: static !important;   /* fully overrides desktop absolute */
-    left: auto !important;
-    top: auto !important;
-    width: 65%;                    /* full-width scoreboard */
-    margin-bottom: 2em;
-    margin-left: 0;
-    text-align: center;
+  .grid-wrapper::after {
+    display: none;
+  }
+
+  .grid-wrapper > .scoreboard,
+  .grid {
+    flex: none;
+    width: 100%;
+    max-width: calc(var(--cols, 4) * var(--card-max));
+  }
+}
+
+/* Mobile Layout */
+@media (max-width: 700px) {
+  .grid-wrapper > .scoreboard,
+  .grid {
+    max-width: calc(var(--cols, 4) * 95px);
   }
 
   .grid {
-    width: 100%;
-    max-width: 380px;
-    grid-template-columns: repeat(4, 1fr);
     gap: 8px;
   }
-}
 
-.game-controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  justify-content: center;
-  align-items: center;
-}
-
-@media (max-width: 700px) {
   .game-controls {
     flex-direction: row;
     gap: 0.5rem;
   }
-  
+
   .game-controls .nes-btn {
     font-size: 0.65rem;
     padding: 0.4rem 0.6rem;
+  }
+}
+
+/* Small phones: tighter name banner so names wrap less on 5-column boards */
+@media (max-width: 480px) {
+  .card-name {
+    left: 1px;
+    right: 1px;
+    bottom: 2px;
+    padding: 2px 1px;
+    font-size: 5.6px;
   }
 }

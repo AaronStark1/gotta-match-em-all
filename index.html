@@ -4,13 +4,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gotta Match' Em All!</title>
-  <!-- ness css  -->
-     <link href="https://unpkg.com/nes.css/css/nes.css" rel="stylesheet" />
-  <!-- google font  -->
+  <title>Gotta Match' Em All! | Retro Pokémon Memory Game</title>
+  <meta name="description"
+    content="A retro 8-bit Pokémon memory card game. Flip cards, match pairs and beat your best score and time on Easy, Medium or Hard boards." />
+  <meta name="theme-color" content="#212529" />
+
+  <!-- favicon (bundled locally) -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Gotta Match' Em All!" />
+  <meta property="og:title" content="Gotta Match' Em All! | Retro Pokémon Memory Game" />
+  <meta property="og:description"
+    content="Flip pixel cards, catch matching Pokémon pairs and chase your best score and time in this 90s-style memory game." />
+  <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Gotta Match' Em All! retro pixel title card with face-down Pokémon cards" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Gotta Match' Em All! | Retro Pokémon Memory Game" />
+  <meta name="twitter:description"
+    content="Flip pixel cards, catch matching Pokémon pairs and chase your best score and time." />
+  <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
+
+  <!-- google font (nes.css is bundled from node_modules via src/main.jsx) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">
-  <!-- favicon  -->
-   <link rel="shortcut icon" href="https://www.pngall.com/wp-content/uploads/4/Pokeball-PNG-HD-Image.png" type="image/x-icon">
+
+  <!-- warm up the game's data + artwork hosts -->
+  <link rel="preconnect" href="https://pokeapi.co" crossorigin />
+  <link rel="preconnect" href="https://raw.githubusercontent.com" />
 </head>
 
 <body>

@@ -9,8 +9,9 @@
   border: 2px solid #ffe600;
 }
 
-
-
+.scoreboard.nes-container {
+  padding: 1rem 1.25rem;
+}
 
 .scoreboard:hover {
   transform: scale(1.03);
@@ -37,4 +38,109 @@
 }
 .scoreboard.animate-once {
   animation: slideIn 0.4s ease-out;
+}
+
+/* ---------- HUD contents ---------- */
+.hud-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.hud-badge.nes-badge {
+  width: 8.5em;
+  margin: 0.5em 0;
+  font-size: 0.6rem;
+}
+
+.hud-stats,
+.hud-best {
+  margin: 0;
+}
+
+.hud-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: clamp(0.65rem, 1.4vw, 0.8rem);
+}
+
+.hud-stat + .hud-stat {
+  margin-top: 0.4rem;
+}
+
+.hud-stat dt {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.hud-stat dd {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.hud-best {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 2px dashed rgba(255, 255, 255, 0.35);
+}
+
+.hud-best .hud-stat {
+  font-size: 0.55rem;
+}
+
+/* Stacked layout (tablet / mobile): HUD becomes a horizontal bar */
+@media (max-width: 900px) {
+  .scoreboard {
+    text-align: center;
+  }
+
+  .scoreboard:hover {
+    transform: none;
+  }
+
+  .hud-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .hud-stats {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
+    justify-content: space-around;
+    gap: 0.5rem 1rem;
+  }
+
+  .hud-stats .hud-stat {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .hud-stat + .hud-stat {
+    margin-top: 0;
+  }
+
+  .hud-best {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.5rem;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+  }
+
+  .hud-best .hud-stat {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .scoreboard.nes-container {
+    padding: 0.75rem 0.75rem;
+  }
+
+  .hud-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
