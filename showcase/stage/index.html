@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Showcase stage · Gotta Match' Em All!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=block" rel="stylesheet" />
+    <link rel="stylesheet" href="stage.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <div id="backdrop" aria-hidden="true"></div>
+
+      <div id="rig">
+        <div id="screen">
+          <iframe id="app" title="Gotta Match' Em All!"></iframe>
+          <div id="spot" aria-hidden="true"></div>
+          <div class="shell" aria-hidden="true">
+            <span class="shell-led"></span>
+            <span class="shell-speaker"></span>
+            <span class="shell-brand">POCKET</span>
+            <span class="shell-dpad"></span>
+            <span class="shell-label">390×844</span>
+            <span class="shell-btn b"></span>
+            <span class="shell-btn a"></span>
+          </div>
+        </div>
+        <div id="rig-fx" aria-hidden="true"></div>
+      </div>
+
+      <div id="warm" aria-hidden="true"></div>
+
+      <div id="fx" aria-hidden="true">
+        <div id="streak">
+          <span class="burst"></span>
+          <span class="plate"><span class="word"></span><span class="sub"></span></span>
+        </div>
+        <div id="keys">
+          <span class="cap-title">KEYBOARD</span>
+          <span class="cap up" data-key="ArrowUp">↑</span>
+          <span class="cap left" data-key="ArrowLeft">←</span>
+          <span class="cap down-key" data-key="ArrowDown">↓</span>
+          <span class="cap right" data-key="ArrowRight">→</span>
+          <span class="cap enter" data-key="Enter">ENTER</span>
+        </div>
+        <div id="chip"><span class="n"></span><span class="l"></span></div>
+      </div>
+
+      <div id="pointer" data-kind="arrow" aria-hidden="true">
+        <img class="p-arrow" src="cursors/pokecursor.png" alt="" />
+        <img class="p-hand" src="cursors/pokepointer.png" alt="" />
+        <span class="p-touch"></span>
+      </div>
+    </div>
+    <script src="stage.js"></script>
+  </body>
+</html>

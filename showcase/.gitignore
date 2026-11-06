@@ -1,0 +1,7 @@
+# Raw screencast frames, the app build and intermediate clips (regenerated on every run)
+.work/
+node_modules/
+.cache/
+
+# Rendered reel and posters (npm run record); the portfolio keeps the published copies
+out/

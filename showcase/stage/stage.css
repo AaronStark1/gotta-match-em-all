@@ -1,0 +1,854 @@
+/* ==========================================================================
+   Showcase stage: the real app runs live in #app (an iframe) and everything
+   in this file is the reel's own "broadcast" layer drawn around it: camera
+   rig, CRT warm-up, spotlight, labels, callouts, keycaps, point popups,
+   pointer and the handheld shell for the responsive morph. 1440x810 CSS px
+   at 4/3 DPR, so the screencast is native 1920x1080.
+
+   Pixel-font sizes are multiples of 6px (6px CSS = 8 device px) so Press
+   Start 2P lands on whole device pixels.
+   ========================================================================== */
+:root {
+  --yellow: #ffcb05;
+  --yellow-dark: #b8860b;
+  --blue: #2a75bb;
+  --navy: #0c3364;
+  --red: #ee1515;
+  --red-deep: #c8141b;
+  --ink: #0f1218;
+  --nes-dark: #212529;
+  --panel: rgba(10, 13, 20, 0.95);
+  --pixel: "Press Start 2P", monospace;
+  --term: "VT323", monospace;
+  --cam-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --morph-ease: cubic-bezier(0.7, 0, 0.25, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  cursor: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: var(--pixel);
+  color: #fff;
+}
+
+/* ---------- Backdrop (only seen while the screen is a handheld) ---------- */
+#backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px) 0 0 / 24px 24px,
+    radial-gradient(ellipse 60% 70% at 50% 46%, rgba(255, 203, 5, 0.16), transparent 70%),
+    radial-gradient(ellipse at 50% 45%, #1b3766 0%, #0c1830 48%, #04060c 100%);
+}
+
+#backdrop.on {
+  opacity: 1;
+}
+
+/* Drifting pixel sparkles on the backdrop */
+#backdrop i {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--yellow);
+  box-shadow: 0 -6px var(--yellow), 0 6px var(--yellow), -6px 0 var(--yellow), 6px 0 var(--yellow);
+  opacity: 0.5;
+  animation: bd-twinkle 2.4s steps(4, end) infinite;
+}
+
+@keyframes bd-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.6); }
+  50% { opacity: 0.7; transform: scale(1); }
+}
+
+/* ---------- Camera rig (zoom / pan by CSS transition on the compositor) ---------- */
+#rig {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1440px;
+  height: 810px;
+  transform-origin: 0 0;
+  transition: transform var(--cam-dur, 0.9s) var(--cam-ease);
+}
+
+/* Labels ride in app coordinates on top of the screen, so they follow the camera */
+#rig-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ---------- The screen: the app iframe, which doubles as the handheld body ---------- */
+#screen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0;
+  border-radius: 0;
+  transform-origin: 0 0;
+  background: transparent;
+  transition:
+    transform 1.25s var(--morph-ease),
+    padding 1.25s var(--morph-ease),
+    border-radius 1.25s var(--morph-ease),
+    background-color 0.5s ease,
+    box-shadow 1.25s var(--morph-ease);
+}
+
+#app {
+  display: block;
+  width: 1440px;
+  height: 810px;
+  border: 0;
+  background: var(--ink);
+  transition:
+    width 1.25s var(--morph-ease),
+    height 1.25s var(--morph-ease),
+    border-radius 1.25s var(--morph-ease),
+    box-shadow 1.25s var(--morph-ease);
+}
+
+/* Handheld: 390x844 viewport inside an original red pocket console */
+#screen.handheld {
+  padding: 58px 24px 118px;
+  border-radius: 46px 46px 46px 104px;
+  background-color: #c8141b;
+  background-image:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.22), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.28), transparent 30%);
+  box-shadow:
+    inset 0 0 0 4px #000,
+    inset 6px 6px 0 4px rgba(255, 255, 255, 0.18),
+    inset -6px -6px 0 4px rgba(0, 0, 0, 0.25),
+    14px 18px 0 0 rgba(0, 0, 0, 0.55),
+    0 0 90px 10px rgba(255, 203, 5, 0.18);
+}
+
+#screen.handheld #app {
+  width: 390px;
+  height: 844px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 8px #0b0d12, 0 0 0 12px #000;
+}
+
+/* Shell details live in the padding, so they scale with the morph */
+.shell {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+#screen.handheld .shell {
+  opacity: 1;
+  transition-delay: 0.85s;
+}
+
+.shell-led {
+  position: absolute;
+  top: 24px;
+  left: 30px;
+  width: 12px;
+  height: 12px;
+  background: #4cff6a;
+  box-shadow: 0 0 0 3px #000, 0 0 14px 4px rgba(76, 255, 106, 0.7);
+}
+
+.shell-speaker {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  width: 96px;
+  height: 8px;
+  margin-left: -48px;
+  background: repeating-linear-gradient(90deg, #000 0 12px, transparent 12px 18px);
+}
+
+.shell-brand {
+  position: absolute;
+  top: 22px;
+  right: 30px;
+  font-size: 12px;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.shell-dpad {
+  position: absolute;
+  left: 46px;
+  bottom: 30px;
+  width: 60px;
+  height: 60px;
+  background:
+    linear-gradient(#15171c, #15171c) 20px 0 / 20px 60px no-repeat,
+    linear-gradient(#15171c, #15171c) 0 20px / 60px 20px no-repeat;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.5));
+}
+
+.shell-btn {
+  position: absolute;
+  bottom: 50px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.3), 0 0 0 3px #000, 3px 4px 0 3px rgba(0, 0, 0, 0.45);
+}
+
+.shell-btn.b {
+  right: 96px;
+  bottom: 30px;
+}
+
+.shell-btn.a {
+  right: 44px;
+}
+
+.shell-label {
+  position: absolute;
+  left: 50%;
+  bottom: 36px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+}
+
+/* ---------- Spotlight (inside #screen: app coordinates, follows the camera) ---------- */
+#spot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  border: 3px dashed var(--yellow);
+  outline: 3px solid #000;
+  box-shadow: 0 0 0 4000px rgba(3, 5, 10, 0.6);
+  transition:
+    left 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    top 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.42s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.4s ease;
+}
+
+#spot.on {
+  opacity: 1;
+}
+
+/* ---------- Gentle CRT warm-up: a phosphor bloom that settles while a soft
+   refresh band rolls down the glass once. Starts from the plain picture, so
+   the reel's first frame is still the poster. ---------- */
+#warm {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+#warm.on {
+  animation: warm-bloom 1.5s ease-out both;
+}
+
+#warm::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -34%;
+  height: 34%;
+  background: linear-gradient(
+    rgba(255, 255, 255, 0),
+    rgba(220, 235, 255, 0.07) 38%,
+    rgba(235, 245, 255, 0.2) 50%,
+    rgba(220, 235, 255, 0.07) 62%,
+    rgba(255, 255, 255, 0)
+  );
+}
+
+#warm.on::before {
+  animation: warm-roll 1.35s cubic-bezier(0.45, 0, 0.55, 1) 0.05s both;
+}
+
+@keyframes warm-bloom {
+  0% { opacity: 0; background: rgba(255, 236, 190, 0); }
+  18% { opacity: 1; background: rgba(255, 236, 190, 0.1); }
+  100% { opacity: 1; background: rgba(255, 236, 190, 0); }
+}
+
+@keyframes warm-roll {
+  from { transform: translateY(0); }
+  to { transform: translateY(400%); }
+}
+
+/* ---------- Broadcast layer (stage coordinates) ---------- */
+#fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Golden press flash */
+.flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(circle at var(--x) var(--y), rgba(255, 252, 230, 1) 0, rgba(255, 220, 90, 0.9) 6%, rgba(255, 203, 5, 0.55) 18%, rgba(255, 160, 0, 0.18) 42%, transparent 70%);
+  animation: flash 0.55s ease-out both;
+}
+
+.flash.big {
+  animation-duration: 0.75s;
+}
+
+.flash.soft {
+  animation-duration: 0.6s;
+  background: radial-gradient(circle at var(--x) var(--y), rgba(255, 248, 220, 0.85) 0, rgba(255, 210, 80, 0.45) 10%, rgba(255, 203, 5, 0.16) 30%, transparent 58%);
+}
+
+@keyframes flash {
+  0% { opacity: 0; transform: scale(0.4); }
+  12% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+.flash-rays {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 900px;
+  height: 900px;
+  margin: -450px 0 0 -450px;
+  opacity: 0;
+  background: repeating-conic-gradient(rgba(255, 230, 120, 0.55) 0 6deg, transparent 6deg 18deg);
+  mask: radial-gradient(circle, #000 0, #000 28%, transparent 62%);
+  animation: rays 0.75s ease-out both;
+}
+
+@keyframes rays {
+  0% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4) rotate(24deg); }
+}
+
+/* Act chip, bottom-left */
+#chip {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  display: flex;
+  align-items: stretch;
+  border: 3px solid #000;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.3s steps(3, end), transform 0.3s steps(3, end);
+}
+
+#chip.on {
+  opacity: 1;
+  transform: none;
+}
+
+#chip .n {
+  padding: 9px 10px 8px;
+  font-size: 12px;
+  color: #000;
+  background: var(--yellow);
+}
+
+#chip .l {
+  padding: 9px 12px 8px;
+  font-size: 12px;
+  color: #fff;
+  background: var(--navy);
+  border-left: 3px solid #000;
+  letter-spacing: 1px;
+}
+
+/* Callout cards */
+.callout {
+  position: absolute;
+  width: 252px;
+  padding: 14px 14px 12px;
+  background: var(--panel);
+  border: 3px solid var(--yellow);
+  box-shadow: 0 0 0 3px #000, 8px 8px 0 3px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.24s steps(3, end), transform 0.24s steps(3, end);
+}
+
+.callout.on {
+  opacity: 1;
+  transform: none;
+}
+
+.callout.out {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.callout h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.callout p {
+  margin: 0;
+  font-family: var(--term);
+  font-size: 22px;
+  line-height: 1;
+  color: #e9edf3;
+}
+
+.callout code {
+  display: block;
+  margin-top: 10px;
+  padding: 7px 9px 6px;
+  font-family: var(--term);
+  font-size: 20px;
+  line-height: 1;
+  color: #8ff0a4;
+  background: #05070b;
+  border: 2px solid #2a3442;
+  white-space: pre;
+}
+
+.callout .tag {
+  display: inline-block;
+  margin-bottom: 9px;
+  padding: 4px 6px 3px;
+  font-size: 6px;
+  color: #000;
+  background: var(--yellow);
+}
+
+/* Prominent NES-container callouts (Act 4): white pixel frame, title on the border */
+.callout.nes {
+  width: 270px;
+  padding: 26px 16px 16px;
+  background: var(--nes-dark);
+  border: 4px solid #fff;
+  box-shadow: 0 0 0 4px #000, 10px 10px 0 4px rgba(0, 0, 0, 0.55);
+}
+
+.callout.nes .tag {
+  position: absolute;
+  top: -11px;
+  left: 14px;
+  margin: 0;
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--yellow);
+  background: var(--nes-dark);
+  text-shadow: 2px 2px 0 #000;
+}
+
+.callout.nes h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+  line-height: 1.35;
+  color: #fff;
+}
+
+.callout.nes p {
+  font-size: 26px;
+  line-height: 0.95;
+}
+
+.callout.nes p b {
+  font-weight: 400;
+  color: var(--yellow);
+}
+
+.callout.nes code {
+  margin-top: 12px;
+  font-size: 22px;
+}
+
+/* The pixel pointer on the side of an NES callout, aimed at the board */
+.callout.nes::after {
+  content: "";
+  position: absolute;
+  top: 34px;
+  border: 10px solid transparent;
+}
+
+.callout.nes.point-right::after {
+  right: -27px;
+  border-left: 13px solid #fff;
+}
+
+.callout.nes.point-left::after {
+  left: -27px;
+  border-right: 13px solid #fff;
+}
+
+/* Big badge plate (Act 5) */
+.callout.badge {
+  width: 312px;
+  padding: 16px 18px 14px;
+  background: var(--navy);
+  border: 4px solid #000;
+  box-shadow: inset 0 0 0 4px var(--yellow), 10px 10px 0 rgba(0, 0, 0, 0.55);
+  transition: opacity 0.3s steps(4, end), transform 0.3s steps(4, end);
+  transform: scale(0.6);
+}
+
+.callout.badge.on {
+  transform: none;
+}
+
+.callout.badge h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: var(--yellow);
+  text-shadow: 3px 3px 0 #000;
+}
+
+.callout.badge h3 .emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 24px;
+  text-shadow: none;
+}
+
+.callout.badge p {
+  font-family: var(--pixel);
+  font-size: 12px;
+  line-height: 1.6;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* One-line labels beside the spotlight (live in #rig-fx: app coordinates) */
+.label {
+  position: absolute;
+  padding: 10px 12px 9px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #fff;
+  background: var(--navy);
+  border: 3px solid #000;
+  box-shadow: 0 0 0 3px var(--yellow), 7px 7px 0 3px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition:
+    opacity 0.2s steps(2, end),
+    transform 0.2s steps(2, end),
+    top 0.38s cubic-bezier(0.2, 0.8, 0.2, 1),
+    left 0.38s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.label.on {
+  opacity: 1;
+  transform: none;
+}
+
+.label b {
+  font-weight: 400;
+  color: var(--yellow);
+}
+
+.label::before {
+  content: "";
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  margin-top: -6px;
+  border: 6px solid transparent;
+  border-right: 9px solid var(--yellow);
+}
+
+.label.right::before {
+  left: auto;
+  right: -15px;
+  border-right: 6px solid transparent;
+  border-left: 9px solid var(--yellow);
+}
+
+.label.up::before {
+  left: 24px;
+  top: -15px;
+  margin-top: 0;
+  border: 6px solid transparent;
+  border-bottom: 9px solid var(--yellow);
+}
+
+/* Floating "+100" over a matched pair: echoes the HUD's real score popup at board size */
+.points {
+  position: absolute;
+  font-size: 24px;
+  color: var(--yellow);
+  white-space: nowrap;
+  text-shadow: -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 6px 6px 0 var(--navy);
+  pointer-events: none;
+  animation: points-up 1.15s steps(10, end) forwards;
+}
+
+@keyframes points-up {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.5); }
+  12% { opacity: 1; transform: translate(-50%, -60%) scale(1.25); }
+  25% { opacity: 1; transform: translate(-50%, -80%) scale(1); }
+  78% { opacity: 1; transform: translate(-50%, -190%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -230%) scale(1); }
+}
+
+/* Streak badge */
+#streak {
+  position: absolute;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(-7deg) scale(0);
+}
+
+#streak.pop {
+  animation: streak-pop 0.42s steps(6, end) both;
+}
+
+#streak.bye {
+  animation: streak-bye 0.26s steps(3, end) both;
+}
+
+@keyframes streak-pop {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(0.2); }
+  55% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(1.28); }
+  80% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(0.94); }
+  100% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(1); }
+}
+
+@keyframes streak-bye {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(-7deg) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(-7deg) scale(0.3); }
+}
+
+#streak .burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 360px;
+  height: 360px;
+  margin: -180px 0 0 -180px;
+  background: repeating-conic-gradient(rgba(255, 203, 5, 0.5) 0 9deg, rgba(238, 21, 21, 0.28) 9deg 18deg);
+  mask: radial-gradient(circle, #000 0, #000 30%, transparent 66%);
+  animation: burst-spin 3s linear infinite;
+}
+
+@keyframes burst-spin {
+  to { transform: rotate(360deg); }
+}
+
+#streak .plate {
+  position: relative;
+  display: block;
+  padding: 16px 20px 14px;
+  background: var(--red-deep);
+  border: 4px solid #000;
+  box-shadow: inset 0 0 0 4px var(--yellow), 8px 8px 0 #000;
+  white-space: nowrap;
+  text-align: center;
+}
+
+#streak .word {
+  display: block;
+  font-size: 24px;
+  line-height: 1.25;
+  color: var(--yellow);
+  text-shadow: -3px -3px 0 var(--blue), 3px -3px 0 var(--blue), -3px 3px 0 var(--blue), 3px 3px 0 var(--blue), 6px 6px 0 var(--navy), 9px 9px 0 #000;
+}
+
+#streak .fire {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+  font-size: 24px;
+  text-shadow: none;
+}
+
+#streak .sub {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+/* Keycaps (Act 4): inverted-T arrow cluster over a wide Enter, in the right margin */
+#keys {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  grid-template-rows: auto 46px 46px 40px;
+  grid-template-areas:
+    "title title title"
+    ".     up    .    "
+    "left  down  right"
+    "enter enter enter";
+  gap: 8px;
+  padding: 14px 14px 18px;
+  background: var(--panel);
+  border: 3px solid #000;
+  box-shadow: 0 0 0 3px var(--blue), 7px 7px 0 3px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.24s steps(3, end), transform 0.24s steps(3, end);
+}
+
+#keys.on {
+  opacity: 1;
+  transform: none;
+}
+
+#keys .cap-title {
+  grid-area: title;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--yellow);
+  text-shadow: 2px 2px 0 #000;
+}
+
+#keys .cap {
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  color: #212529;
+  background: #e9ecef;
+  border: 3px solid #000;
+  box-shadow: inset -4px -4px 0 #adafbc, 0 4px 0 #000;
+  transition: transform 0.05s linear, background-color 0.05s linear, box-shadow 0.05s linear;
+}
+
+#keys .cap.up { grid-area: up; }
+#keys .cap.left { grid-area: left; }
+#keys .cap.down-key { grid-area: down; }
+#keys .cap.right { grid-area: right; }
+
+#keys .cap.enter {
+  grid-area: enter;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+#keys .cap.down {
+  transform: translateY(4px);
+  background: var(--yellow);
+  box-shadow: inset -4px -4px 0 var(--yellow-dark), 0 0 0 #000;
+}
+
+/* ---------- Pointer: the app's own Poké Ball cursors ---------- */
+#pointer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  will-change: transform;
+  pointer-events: none;
+}
+
+#pointer.on {
+  opacity: 1;
+}
+
+#pointer img {
+  position: absolute;
+  left: -12px;
+  top: -12px;
+  width: 38px;
+  height: 38px;
+  image-rendering: pixelated;
+  filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.5));
+  display: none;
+  transition: transform 0.08s ease;
+}
+
+#pointer[data-kind="arrow"] .p-arrow,
+#pointer[data-kind="pointer"] .p-hand {
+  display: block;
+}
+
+#pointer.down img {
+  transform: scale(0.86);
+}
+
+#pointer .p-touch {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: scale(1.3);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  display: none;
+}
+
+#pointer[data-kind="touch"] .p-touch {
+  display: block;
+}
+
+#pointer[data-kind="touch"].down .p-touch {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.ripple {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border-radius: 50%;
+  border: 4px solid var(--yellow);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.55), inset 0 0 0 3px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  z-index: 59;
+  animation: ripple 0.5s steps(5, end) forwards;
+}
+
+.ripple.touch {
+  border-color: #fff;
+}
+
+@keyframes ripple {
+  from { transform: scale(0.25); opacity: 1; }
+  to { transform: scale(1.35); opacity: 0; }
+}

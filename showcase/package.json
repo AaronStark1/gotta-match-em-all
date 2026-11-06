@@ -1,0 +1,18 @@
+{
+  "name": "gotta-match-em-all-showcase",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Reproducible recording pipeline for the Gotta Match 'Em All showcase reel and README media",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "record": "node record-showcase.mjs",
+    "media": "node readme-media.mjs"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "5.3.0",
+    "playwright": "1.64.1"
+  }
+}
