@@ -1,5 +1,7 @@
 /* =====================================================================
- *  TITLE SCREEN
+ *  TITLE SCREEN ("/", LandingPage) + MAIN MENU ("/menu", MenuPage)
+ *  Both are `.landing` pages over the poké-group wallpaper; the title
+ *  screen (`.landing--title`) shows it at full strength.
  * ===================================================================== */
 
 /* ---------- Page shell: header / main / footer, all in normal flow ---------- */
@@ -21,7 +23,7 @@
   background-color: var(--poke-screen-bg);
 }
 
-/* Backdrop: the poké-group GIF, pixel-scaled, under a dark dithered tint */
+/* Menu backdrop: the poké-group GIF, pixel-scaled, under a dark dithered tint */
 .landing::before {
   content: "";
   position: fixed;
@@ -45,6 +47,24 @@
   display: flex;
   justify-content: flex-end;
   width: 100%;
+}
+
+/* Main menu: [◀ BACK] on the left, the SFX / CRT switches on the right */
+.landing--menu .landing-topbar {
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.landing-back.nes-btn {
+  gap: 0.6em;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+/* The play triangle, mirrored */
+.landing-back-icon {
+  transform: scaleX(-1);
 }
 
 .landing-main {
@@ -192,7 +212,7 @@
 
 /*
  * The panel title replaces the selector's own "Difficulty" caption on screen:
- * LandingPage passes `hideLabel`, so the group stays named by it (aria-labelledby
+ * MenuPage passes `hideLabel`, so the group stays named by it (aria-labelledby
  * resolves hidden targets) without screen readers hearing it twice.
  */
 
@@ -620,6 +640,30 @@
   }
 }
 
+/* =====================================================================
+ *  Title screen: the wallpaper gets the stage
+ * ===================================================================== */
+
+/* Full-strength, smoothly scaled wallpaper; just a soft vignette and a darker
+   foot so the footer text stays readable. Positioned on the glowing Poké Ball. */
+.landing.landing--title::before {
+  background-image:
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(transparent 72%, rgba(0, 0, 0, 0.55)),
+    url("../assets/gifs/poke-group.gif");
+  background-size: auto, auto, cover;
+  background-position: center, center, 62% center;
+  background-repeat: no-repeat;
+  image-rendering: auto;
+}
+
+/* Logo up top, PRESS START near the bottom: the scene in between stays clear */
+.landing--title .landing-main {
+  justify-content: space-between;
+  gap: 2rem;
+  padding: clamp(0.5rem, 4vh, 3rem) 0 clamp(1rem, 7vh, 4.5rem);
+}
+
 /* ---------- Responsive ---------- */
 
 /* Wide but short screens (1024x768, 1366x768…): panels side by side */
@@ -736,6 +780,17 @@
 
 /* Small phones: keep Start + Help on one row (the aura still clears Help) */
 @media (max-width: 400px) {
+  /* Icon-only ◀ so it fits beside both switches (named by its aria-label) */
+  .landing-back-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
   .landing-actions {
     gap: 1.25rem;
     padding-right: 0;
@@ -801,11 +856,18 @@
 
 /* ---------- Reduced motion: static glow and glints, nothing drifts or hops ---------- */
 @media (prefers-reduced-motion: reduce) {
-  /* The looping GIF becomes a still first frame (set by LandingPage) */
+  /* The looping GIF becomes a still first frame (see useBackdropStyle) */
   .landing::before {
     background-image:
       repeating-conic-gradient(rgba(0, 0, 0, 0.3) 0 25%, transparent 0 50%),
       linear-gradient(rgba(12, 15, 22, 0.55), rgba(12, 15, 22, 0.55)),
+      var(--landing-still, none);
+  }
+
+  .landing.landing--title::before {
+    background-image:
+      radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%),
+      linear-gradient(transparent 72%, rgba(0, 0, 0, 0.55)),
       var(--landing-still, none);
   }
 

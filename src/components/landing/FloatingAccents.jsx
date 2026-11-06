@@ -4,7 +4,7 @@ import { SPARKLE_SMALL } from "./sprites";
 
 /**
  * Decorative 8-bit sparkles and mini Poké Balls drifting in the side gutters
- * of the title screen (the page adds two more glints on the logo, for eight
+ * of the main menu (the logo adds two more glints of its own, for eight
  * accents in all). Purely CSS-animated (stepped transform/opacity), drawn
  * behind the menu, click-through, hidden from assistive tech, and frozen
  * under prefers-reduced-motion. Positions live in LandingPage.css.
